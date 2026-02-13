@@ -19,13 +19,15 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import { patientsApi } from '../../api/patients';
-import { Patient, CreatePatientData } from '../../types';
+import { visitsApi } from '../../api/visits';
+import { Patient, CreatePatientData, Visit } from '../../types';
 import PatientFormDialog from './PatientFormDialog';
 
 export default function PatientProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -34,8 +36,12 @@ export default function PatientProfilePage() {
     if (!id) return;
     setLoading(true);
     try {
-      const { data } = await patientsApi.get(id);
-      setPatient(data);
+      const [patientRes, visitsRes] = await Promise.all([
+        patientsApi.get(id),
+        visitsApi.getByPatient(id),
+      ]);
+      setPatient(patientRes.data);
+      setVisits(visitsRes.data);
     } catch {
       setError('Failed to load patient');
     } finally {
@@ -218,12 +224,54 @@ export default function PatientProfilePage() {
         </Paper>
       )}
 
-      {/* Placeholder for future medical timeline */}
-      <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          Medical history, vaccinations, and visit timeline will appear here in Phase 4.
+      {/* Visit History */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="subtitle1" fontWeight={600}>
+          Visit History ({visits.length})
         </Typography>
-      </Paper>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => {
+            if (!patient) return;
+            navigate(`/visits/new?patientId=${patient.id}&clientId=${patient.clientId}`);
+          }}
+        >
+          Start Visit
+        </Button>
+      </Box>
+      {visits.length > 0 ? (
+        visits.map((visit) => (
+          <Paper
+            key={visit.id}
+            variant="outlined"
+            sx={{ p: 2, mb: 1, cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+            onClick={() => navigate(`/visits/${visit.id}`)}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box>
+                <Typography variant="body2" fontWeight={500}>
+                  {new Date(visit.createdAt).toLocaleDateString()} — {visit.chiefComplaint || 'Visit'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Dr. {visit.vet?.lastName || '—'} | {visit.vitals?.length || 0} vitals | {visit.clinicalNotes?.length || 0} notes
+                </Typography>
+              </Box>
+              <Chip
+                label={visit.status.replace('_', ' ').toUpperCase()}
+                size="small"
+                color={visit.status === 'completed' ? 'success' : visit.status === 'in_progress' ? 'warning' : 'default'}
+              />
+            </Box>
+          </Paper>
+        ))
+      ) : (
+        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            No visits recorded yet. Click "Start Visit" to begin.
+          </Typography>
+        </Paper>
+      )}
 
       <PatientFormDialog
         open={editDialogOpen}

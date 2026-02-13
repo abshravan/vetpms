@@ -211,3 +211,99 @@ export interface UpdateAppointmentData {
   reason?: string;
   notes?: string;
 }
+
+// ── Visits / EMR ──
+
+export type VisitStatus = 'open' | 'in_progress' | 'completed';
+export type NoteType = 'soap' | 'progress' | 'procedure' | 'discharge' | 'general';
+
+export const NOTE_TYPE_OPTIONS: { value: NoteType; label: string }[] = [
+  { value: 'soap', label: 'SOAP Note' },
+  { value: 'progress', label: 'Progress Note' },
+  { value: 'procedure', label: 'Procedure Note' },
+  { value: 'discharge', label: 'Discharge Summary' },
+  { value: 'general', label: 'General Note' },
+];
+
+export interface SOAPContent {
+  subjective?: string;
+  objective?: string;
+  assessment?: string;
+  plan?: string;
+  text?: string;
+}
+
+export interface ClinicalNote {
+  id: string;
+  visitId: string;
+  authorId: string;
+  author?: { id: string; firstName: string; lastName: string };
+  noteType: NoteType;
+  content: SOAPContent;
+  correctsNoteId: string | null;
+  createdAt: string;
+}
+
+export interface VitalsRecord {
+  id: string;
+  visitId: string;
+  recordedById: string;
+  recordedBy?: { id: string; firstName: string; lastName: string };
+  temperature: number | null;
+  temperatureUnit: string | null;
+  heartRate: number | null;
+  respiratoryRate: number | null;
+  weight: number | null;
+  weightUnit: string | null;
+  bodyConditionScore: number | null;
+  painScore: number | null;
+  mucousMembraneColor: string | null;
+  capillaryRefillTime: number | null;
+  notes: string | null;
+  recordedAt: string;
+}
+
+export interface Visit {
+  id: string;
+  patientId: string;
+  patient?: Patient;
+  clientId: string;
+  client?: Client;
+  vetId: string;
+  vet?: { id: string; firstName: string; lastName: string };
+  appointmentId: string | null;
+  status: VisitStatus;
+  chiefComplaint: string | null;
+  vitals: VitalsRecord[];
+  clinicalNotes: ClinicalNote[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVisitData {
+  patientId: string;
+  clientId: string;
+  vetId: string;
+  appointmentId?: string;
+  chiefComplaint?: string;
+}
+
+export interface RecordVitalsData {
+  temperature?: number;
+  temperatureUnit?: string;
+  heartRate?: number;
+  respiratoryRate?: number;
+  weight?: number;
+  weightUnit?: string;
+  bodyConditionScore?: number;
+  painScore?: number;
+  mucousMembraneColor?: string;
+  capillaryRefillTime?: number;
+  notes?: string;
+}
+
+export interface CreateClinicalNoteData {
+  noteType?: NoteType;
+  content: SOAPContent;
+  correctsNoteId?: string;
+}
