@@ -8,6 +8,8 @@ import ClientsListPage from './pages/clients/ClientsListPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import PatientsListPage from './pages/patients/PatientsListPage';
 import PatientProfilePage from './pages/patients/PatientProfilePage';
+import AppointmentsPage from './pages/appointments/AppointmentsPage';
+import AppointmentDetailPage from './pages/appointments/AppointmentDetailPage';
 
 export default function App() {
   return (
@@ -25,7 +27,8 @@ export default function App() {
         <Route path="/clients/:id" element={<ClientDetailPage />} />
         <Route path="/patients" element={<PatientsListPage />} />
         <Route path="/patients/:id" element={<PatientProfilePage />} />
-        <Route path="/appointments" element={<PlaceholderPage title="Appointments" />} />
+        <Route path="/appointments" element={<AppointmentsPage />} />
+        <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
         <Route path="/pharmacy" element={<PlaceholderPage title="Pharmacy & Inventory" />} />
         <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
         <Route path="/reports" element={<PlaceholderPage title="Reports" />} />

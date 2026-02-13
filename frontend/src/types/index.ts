@@ -107,3 +107,107 @@ export type UpdatePatientData = Partial<Omit<CreatePatientData, 'clientId'>> & {
   isDeceased?: boolean;
   deceasedDate?: string;
 };
+
+// ── Appointments ──
+
+export type AppointmentStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'checked_in'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show';
+
+export type AppointmentType =
+  | 'checkup'
+  | 'vaccination'
+  | 'surgery'
+  | 'dental'
+  | 'grooming'
+  | 'emergency'
+  | 'follow_up'
+  | 'lab_work'
+  | 'other';
+
+export const APPOINTMENT_TYPE_OPTIONS: { value: AppointmentType; label: string }[] = [
+  { value: 'checkup', label: 'Check-up' },
+  { value: 'vaccination', label: 'Vaccination' },
+  { value: 'surgery', label: 'Surgery' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'grooming', label: 'Grooming' },
+  { value: 'emergency', label: 'Emergency' },
+  { value: 'follow_up', label: 'Follow-up' },
+  { value: 'lab_work', label: 'Lab Work' },
+  { value: 'other', label: 'Other' },
+];
+
+export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
+  scheduled: 'Scheduled',
+  confirmed: 'Confirmed',
+  checked_in: 'Checked In',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  no_show: 'No Show',
+};
+
+export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'> = {
+  scheduled: 'default',
+  confirmed: 'info',
+  checked_in: 'warning',
+  in_progress: 'secondary',
+  completed: 'success',
+  cancelled: 'error',
+  no_show: 'error',
+};
+
+// Valid next statuses for UI buttons
+export const APPOINTMENT_TRANSITIONS: Record<AppointmentStatus, AppointmentStatus[]> = {
+  scheduled: ['confirmed', 'checked_in', 'cancelled', 'no_show'],
+  confirmed: ['checked_in', 'cancelled', 'no_show'],
+  checked_in: ['in_progress', 'cancelled'],
+  in_progress: ['completed'],
+  completed: [],
+  cancelled: [],
+  no_show: [],
+};
+
+export interface Appointment {
+  id: string;
+  clientId: string;
+  client?: Client;
+  patientId: string;
+  patient?: Patient;
+  vetId: string;
+  vet?: { id: string; firstName: string; lastName: string; email: string; role: string };
+  startTime: string;
+  endTime: string;
+  type: AppointmentType;
+  status: AppointmentStatus;
+  reason: string | null;
+  notes: string | null;
+  cancellationReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAppointmentData {
+  clientId: string;
+  patientId: string;
+  vetId: string;
+  startTime: string;
+  endTime: string;
+  type?: AppointmentType;
+  reason?: string;
+  notes?: string;
+}
+
+export interface UpdateAppointmentData {
+  vetId?: string;
+  startTime?: string;
+  endTime?: string;
+  type?: AppointmentType;
+  reason?: string;
+  notes?: string;
+}
