@@ -14,8 +14,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  // @UseGuards(JwtAuthGuard, RolesGuard)  // TODO: re-enable auth
+  // @Roles(Role.ADMIN)  // TODO: re-enable auth
   async register(@Body() dto: CreateUserDto) {
     const tokens = await this.authService.register(dto);
     return { message: 'User registered', ...tokens };
