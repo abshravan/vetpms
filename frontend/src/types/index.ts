@@ -307,3 +307,213 @@ export interface CreateClinicalNoteData {
   content: SOAPContent;
   correctsNoteId?: string;
 }
+
+// ── Treatments ──
+
+export type TreatmentStatus = 'ordered' | 'in_progress' | 'completed' | 'cancelled';
+export type TreatmentCategory = 'medication' | 'procedure' | 'surgery' | 'lab_test' | 'imaging' | 'fluid_therapy' | 'other';
+
+export const TREATMENT_CATEGORY_OPTIONS: { value: TreatmentCategory; label: string }[] = [
+  { value: 'medication', label: 'Medication' },
+  { value: 'procedure', label: 'Procedure' },
+  { value: 'surgery', label: 'Surgery' },
+  { value: 'lab_test', label: 'Lab Test' },
+  { value: 'imaging', label: 'Imaging' },
+  { value: 'fluid_therapy', label: 'Fluid Therapy' },
+  { value: 'other', label: 'Other' },
+];
+
+export const TREATMENT_STATUS_LABELS: Record<TreatmentStatus, string> = {
+  ordered: 'Ordered',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+};
+
+export const TREATMENT_STATUS_COLORS: Record<TreatmentStatus, 'default' | 'info' | 'success' | 'error'> = {
+  ordered: 'default',
+  in_progress: 'info',
+  completed: 'success',
+  cancelled: 'error',
+};
+
+export interface Treatment {
+  id: string;
+  visitId: string;
+  patientId: string;
+  patient?: Patient;
+  administeredById: string;
+  administeredBy?: { id: string; firstName: string; lastName: string };
+  category: TreatmentCategory;
+  name: string;
+  description: string | null;
+  dosage: string | null;
+  dosageUnit: string | null;
+  route: string | null;
+  frequency: string | null;
+  durationDays: number | null;
+  status: TreatmentStatus;
+  notes: string | null;
+  cost: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTreatmentData {
+  visitId: string;
+  patientId: string;
+  category?: TreatmentCategory;
+  name: string;
+  description?: string;
+  dosage?: string;
+  dosageUnit?: string;
+  route?: string;
+  frequency?: string;
+  durationDays?: number;
+  notes?: string;
+  cost?: number;
+}
+
+export interface UpdateTreatmentData {
+  status?: TreatmentStatus;
+  dosage?: string;
+  dosageUnit?: string;
+  route?: string;
+  frequency?: string;
+  durationDays?: number;
+  notes?: string;
+  cost?: number;
+}
+
+// ── Vaccinations ──
+
+export type VaccinationStatus = 'scheduled' | 'administered' | 'missed' | 'cancelled';
+
+export const VACCINATION_STATUS_LABELS: Record<VaccinationStatus, string> = {
+  scheduled: 'Scheduled',
+  administered: 'Administered',
+  missed: 'Missed',
+  cancelled: 'Cancelled',
+};
+
+export const VACCINATION_STATUS_COLORS: Record<VaccinationStatus, 'default' | 'success' | 'warning' | 'error'> = {
+  scheduled: 'default',
+  administered: 'success',
+  missed: 'warning',
+  cancelled: 'error',
+};
+
+export interface Vaccination {
+  id: string;
+  patientId: string;
+  patient?: Patient;
+  visitId: string | null;
+  administeredById: string | null;
+  administeredBy?: { id: string; firstName: string; lastName: string } | null;
+  vaccineName: string;
+  manufacturer: string | null;
+  lotNumber: string | null;
+  expirationDate: string | null;
+  route: string | null;
+  site: string | null;
+  dateAdministered: string | null;
+  nextDueDate: string | null;
+  status: VaccinationStatus;
+  notes: string | null;
+  cost: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVaccinationData {
+  patientId: string;
+  visitId?: string;
+  vaccineName: string;
+  manufacturer?: string;
+  lotNumber?: string;
+  expirationDate?: string;
+  route?: string;
+  site?: string;
+  dateAdministered?: string;
+  nextDueDate?: string;
+  notes?: string;
+  cost?: number;
+}
+
+export interface UpdateVaccinationData {
+  visitId?: string;
+  status?: VaccinationStatus;
+  manufacturer?: string;
+  lotNumber?: string;
+  expirationDate?: string;
+  route?: string;
+  site?: string;
+  dateAdministered?: string;
+  nextDueDate?: string;
+  notes?: string;
+  cost?: number;
+}
+
+// ── Preventive Care ──
+
+export type PreventiveCareType = 'flea_tick' | 'heartworm' | 'deworming' | 'dental' | 'wellness_exam' | 'blood_work' | 'urinalysis' | 'other';
+export type PreventiveCareStatus = 'active' | 'due' | 'overdue' | 'completed' | 'discontinued';
+
+export const PREVENTIVE_CARE_TYPE_OPTIONS: { value: PreventiveCareType; label: string }[] = [
+  { value: 'flea_tick', label: 'Flea & Tick' },
+  { value: 'heartworm', label: 'Heartworm' },
+  { value: 'deworming', label: 'Deworming' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'wellness_exam', label: 'Wellness Exam' },
+  { value: 'blood_work', label: 'Blood Work' },
+  { value: 'urinalysis', label: 'Urinalysis' },
+  { value: 'other', label: 'Other' },
+];
+
+export const PREVENTIVE_CARE_STATUS_COLORS: Record<PreventiveCareStatus, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
+  active: 'success',
+  due: 'warning',
+  overdue: 'error',
+  completed: 'default',
+  discontinued: 'default',
+};
+
+export interface PreventiveCare {
+  id: string;
+  patientId: string;
+  patient?: Patient;
+  careType: PreventiveCareType;
+  name: string;
+  description: string | null;
+  productName: string | null;
+  lastAdministered: string | null;
+  nextDueDate: string | null;
+  frequencyDays: number | null;
+  status: PreventiveCareStatus;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePreventiveCareData {
+  patientId: string;
+  careType: PreventiveCareType;
+  name: string;
+  description?: string;
+  productName?: string;
+  lastAdministered?: string;
+  nextDueDate?: string;
+  frequencyDays?: number;
+  notes?: string;
+}
+
+export interface UpdatePreventiveCareData {
+  name?: string;
+  description?: string;
+  productName?: string;
+  lastAdministered?: string;
+  nextDueDate?: string;
+  frequencyDays?: number;
+  status?: PreventiveCareStatus;
+  notes?: string;
+}
