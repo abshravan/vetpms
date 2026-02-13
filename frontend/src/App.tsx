@@ -10,6 +10,8 @@ import PatientsListPage from './pages/patients/PatientsListPage';
 import PatientProfilePage from './pages/patients/PatientProfilePage';
 import AppointmentsPage from './pages/appointments/AppointmentsPage';
 import AppointmentDetailPage from './pages/appointments/AppointmentDetailPage';
+import NewVisitPage from './pages/visits/NewVisitPage';
+import VisitDetailPage from './pages/visits/VisitDetailPage';
 
 export default function App() {
   return (
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/patients/:id" element={<PatientProfilePage />} />
         <Route path="/appointments" element={<AppointmentsPage />} />
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
+        <Route path="/visits/new" element={<NewVisitPage />} />
+        <Route path="/visits/:id" element={<VisitDetailPage />} />
         <Route path="/pharmacy" element={<PlaceholderPage title="Pharmacy & Inventory" />} />
         <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
         <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
