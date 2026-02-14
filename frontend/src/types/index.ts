@@ -517,3 +517,109 @@ export interface UpdatePreventiveCareData {
   status?: PreventiveCareStatus;
   notes?: string;
 }
+
+// ── Billing & Invoicing ──
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'partially_paid' | 'overdue' | 'cancelled' | 'refunded';
+export type PaymentMethod = 'cash' | 'credit_card' | 'debit_card' | 'check' | 'insurance' | 'other';
+
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  draft: 'Draft',
+  sent: 'Sent',
+  paid: 'Paid',
+  partially_paid: 'Partially Paid',
+  overdue: 'Overdue',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
+};
+
+export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
+  draft: 'default',
+  sent: 'info',
+  paid: 'success',
+  partially_paid: 'warning',
+  overdue: 'error',
+  cancelled: 'error',
+  refunded: 'default',
+};
+
+export const PAYMENT_METHOD_OPTIONS: { value: PaymentMethod; label: string }[] = [
+  { value: 'cash', label: 'Cash' },
+  { value: 'credit_card', label: 'Credit Card' },
+  { value: 'debit_card', label: 'Debit Card' },
+  { value: 'check', label: 'Check' },
+  { value: 'insurance', label: 'Insurance' },
+  { value: 'other', label: 'Other' },
+];
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  category: string | null;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  notes: string | null;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  clientId: string;
+  client?: Client;
+  patientId: string | null;
+  patient?: Patient | null;
+  visitId: string | null;
+  status: InvoiceStatus;
+  issueDate: string;
+  dueDate: string | null;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  amountPaid: number;
+  balanceDue: number;
+  paymentMethod: PaymentMethod | null;
+  paymentDate: string | null;
+  notes: string | null;
+  items: InvoiceItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateInvoiceItemData {
+  description: string;
+  category?: string;
+  quantity?: number;
+  unitPrice: number;
+  notes?: string;
+}
+
+export interface CreateInvoiceData {
+  clientId: string;
+  patientId?: string;
+  visitId?: string;
+  issueDate?: string;
+  dueDate?: string;
+  taxRate?: number;
+  discountAmount?: number;
+  notes?: string;
+  items: CreateInvoiceItemData[];
+}
+
+export interface UpdateInvoiceData {
+  status?: InvoiceStatus;
+  dueDate?: string;
+  taxRate?: number;
+  discountAmount?: number;
+  notes?: string;
+}
+
+export interface RecordPaymentData {
+  amount: number;
+  paymentMethod: PaymentMethod;
+  paymentDate?: string;
+  notes?: string;
+}

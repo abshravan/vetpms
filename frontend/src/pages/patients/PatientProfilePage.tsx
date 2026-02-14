@@ -27,16 +27,20 @@ import {
 import { patientsApi } from '../../api/patients';
 import { visitsApi } from '../../api/visits';
 import { treatmentsApi } from '../../api/treatments';
+import { billingApi } from '../../api/billing';
 import {
   Patient,
   CreatePatientData,
   Visit,
   Vaccination,
   PreventiveCare,
+  Invoice,
   VACCINATION_STATUS_LABELS,
   VACCINATION_STATUS_COLORS,
   PREVENTIVE_CARE_TYPE_OPTIONS,
   PREVENTIVE_CARE_STATUS_COLORS,
+  INVOICE_STATUS_LABELS,
+  INVOICE_STATUS_COLORS,
 } from '../../types';
 import PatientFormDialog from './PatientFormDialog';
 
@@ -47,6 +51,7 @@ export default function PatientProfilePage() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [vaccinations, setVaccinations] = useState<Vaccination[]>([]);
   const [preventiveCare, setPreventiveCare] = useState<PreventiveCare[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -55,16 +60,18 @@ export default function PatientProfilePage() {
     if (!id) return;
     setLoading(true);
     try {
-      const [patientRes, visitsRes, vaccRes, pcRes] = await Promise.all([
+      const [patientRes, visitsRes, vaccRes, pcRes, invRes] = await Promise.all([
         patientsApi.get(id),
         visitsApi.getByPatient(id),
         treatmentsApi.getVaccinationsByPatient(id),
         treatmentsApi.getPreventiveCareByPatient(id),
+        billingApi.getByPatient(id),
       ]);
       setPatient(patientRes.data);
       setVisits(visitsRes.data);
       setVaccinations(vaccRes.data);
       setPreventiveCare(pcRes.data);
+      setInvoices(invRes.data);
     } catch {
       setError('Failed to load patient');
     } finally {
@@ -355,6 +362,68 @@ export default function PatientProfilePage() {
         ) : (
           <Typography variant="body2" color="text.secondary" textAlign="center">
             No preventive care plans set up.
+          </Typography>
+        )}
+      </Paper>
+
+      {/* Billing History */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Invoices ({invoices.length})
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => navigate(`/billing/new?clientId=${patient.clientId}&patientId=${patient.id}`)}
+          >
+            New Invoice
+          </Button>
+        </Box>
+        <Divider sx={{ mb: 2 }} />
+        {invoices.length > 0 ? (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Invoice #</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="right">Total</TableCell>
+                  <TableCell align="right">Balance</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {invoices.map((inv) => (
+                  <TableRow
+                    key={inv.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/billing/${inv.id}`)}
+                  >
+                    <TableCell><Typography variant="body2" fontWeight={500}>{inv.invoiceNumber}</Typography></TableCell>
+                    <TableCell>{new Date(inv.issueDate).toLocaleDateString()}</TableCell>
+                    <TableCell align="right">${Number(inv.totalAmount).toFixed(2)}</TableCell>
+                    <TableCell align="right">
+                      <Typography
+                        variant="body2"
+                        color={Number(inv.balanceDue) > 0 ? 'error.main' : 'text.primary'}
+                        fontWeight={Number(inv.balanceDue) > 0 ? 600 : 400}
+                      >
+                        ${Number(inv.balanceDue).toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={INVOICE_STATUS_LABELS[inv.status]} color={INVOICE_STATUS_COLORS[inv.status]} size="small" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            No invoices for this patient.
           </Typography>
         )}
       </Paper>

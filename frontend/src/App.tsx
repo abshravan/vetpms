@@ -12,6 +12,9 @@ import AppointmentsPage from './pages/appointments/AppointmentsPage';
 import AppointmentDetailPage from './pages/appointments/AppointmentDetailPage';
 import NewVisitPage from './pages/visits/NewVisitPage';
 import VisitDetailPage from './pages/visits/VisitDetailPage';
+import InvoicesPage from './pages/billing/InvoicesPage';
+import InvoiceDetailPage from './pages/billing/InvoiceDetailPage';
+import NewInvoicePage from './pages/billing/NewInvoicePage';
 
 export default function App() {
   return (
@@ -34,7 +37,9 @@ export default function App() {
         <Route path="/visits/new" element={<NewVisitPage />} />
         <Route path="/visits/:id" element={<VisitDetailPage />} />
         <Route path="/pharmacy" element={<PlaceholderPage title="Pharmacy & Inventory" />} />
-        <Route path="/billing" element={<PlaceholderPage title="Billing" />} />
+        <Route path="/billing" element={<InvoicesPage />} />
+        <Route path="/billing/new" element={<NewInvoicePage />} />
+        <Route path="/billing/:id" element={<InvoiceDetailPage />} />
         <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
         <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
