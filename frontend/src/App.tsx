@@ -4,7 +4,6 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import AppLayout from './layout/AppLayout';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
-import PlaceholderPage from './pages/PlaceholderPage';
 import ClientsListPage from './pages/clients/ClientsListPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
 import PatientsListPage from './pages/patients/PatientsListPage';
@@ -19,6 +18,7 @@ import NewInvoicePage from './pages/billing/NewInvoicePage';
 import InventoryListPage from './pages/pharmacy/InventoryListPage';
 import InventoryDetailPage from './pages/pharmacy/InventoryDetailPage';
 import InventoryFormPage from './pages/pharmacy/InventoryFormPage';
+import SettingsPage from './pages/settings/SettingsPage';
 
 export default function App() {
   return (
@@ -48,7 +48,7 @@ export default function App() {
         <Route path="/billing/new" element={<NewInvoicePage />} />
         <Route path="/billing/:id" element={<InvoiceDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
-        <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );

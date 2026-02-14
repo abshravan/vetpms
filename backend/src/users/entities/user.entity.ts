@@ -36,6 +36,12 @@ export class User {
   @Column({ length: 20, nullable: true })
   phone: string | null;
 
+  @Column({ length: 100, nullable: true })
+  specialty: string | null;
+
+  @Column({ length: 50, nullable: true })
+  licenseNumber: string | null;
+
   @Column({ default: true })
   isActive: boolean;
 

@@ -770,3 +770,101 @@ export interface CreateTransactionData {
   reference?: string;
   notes?: string;
 }
+
+// ── Settings & User Management ──
+
+export type UserRole = 'admin' | 'vet' | 'tech' | 'receptionist';
+
+export const USER_ROLE_OPTIONS: { value: UserRole; label: string }[] = [
+  { value: 'admin', label: 'Administrator' },
+  { value: 'vet', label: 'Veterinarian' },
+  { value: 'tech', label: 'Technician' },
+  { value: 'receptionist', label: 'Receptionist' },
+];
+
+export const USER_ROLE_COLORS: Record<UserRole, 'error' | 'primary' | 'info' | 'default'> = {
+  admin: 'error',
+  vet: 'primary',
+  tech: 'info',
+  receptionist: 'default',
+};
+
+export interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+  phone: string | null;
+  specialty: string | null;
+  licenseNumber: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreateUserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role?: UserRole;
+  phone?: string;
+}
+
+export interface UpdateUserData {
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  phone?: string;
+  specialty?: string;
+  licenseNumber?: string;
+  isActive?: boolean;
+  password?: string;
+}
+
+export interface ClinicSettings {
+  id: string;
+  clinicName: string;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  country: string | null;
+  timezone: string | null;
+  currency: string;
+  defaultTaxRate: number;
+  appointmentSlotMinutes: number;
+  businessHoursStart: string;
+  businessHoursEnd: string;
+  closedDays: string | null;
+  invoicePaymentTermsDays: number;
+  invoiceFooter: string | null;
+  logoUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateClinicSettingsData {
+  clinicName?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  timezone?: string;
+  currency?: string;
+  defaultTaxRate?: number;
+  appointmentSlotMinutes?: number;
+  businessHoursStart?: string;
+  businessHoursEnd?: string;
+  closedDays?: string;
+  invoicePaymentTermsDays?: number;
+  invoiceFooter?: string;
+  logoUrl?: string;
+}
