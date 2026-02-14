@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import api from '../api/client';
+// import api from '../api/client';  // TODO: re-enable auth
 
 interface User {
   id: string;
@@ -18,45 +18,40 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// DEV MODE: accepts any credentials, creates a fake user session
+// TODO: re-enable real auth by uncommenting the original implementation
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      const { data } = await api.get('/auth/profile');
-      setUser(data);
-    } catch {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      setUser(null);
-    } finally {
-      setLoading(false);
+  const loadUser = useCallback(() => {
+    const stored = localStorage.getItem('devUser');
+    if (stored) {
+      setUser(JSON.parse(stored));
     }
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    loadUser();
+  }, [loadUser]);
 
-  const login = async (email: string, password: string) => {
-    const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    await fetchProfile();
+  const login = async (email: string, _password: string) => {
+    // Dev mode: create a fake user from the email
+    const name = email.split('@')[0] || 'dev';
+    const devUser: User = {
+      id: '00000000-0000-0000-0000-000000000000',
+      firstName: name.charAt(0).toUpperCase() + name.slice(1),
+      lastName: 'User',
+      email,
+      role: 'admin',
+    };
+    localStorage.setItem('devUser', JSON.stringify(devUser));
+    setUser(devUser);
   };
 
   const logout = async () => {
-    try {
-      await api.post('/auth/logout');
-    } catch {
-      // Proceed with local logout even if server call fails
-    }
+    localStorage.removeItem('devUser');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     setUser(null);
