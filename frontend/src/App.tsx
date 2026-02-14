@@ -16,6 +16,9 @@ import VisitDetailPage from './pages/visits/VisitDetailPage';
 import InvoicesPage from './pages/billing/InvoicesPage';
 import InvoiceDetailPage from './pages/billing/InvoiceDetailPage';
 import NewInvoicePage from './pages/billing/NewInvoicePage';
+import InventoryListPage from './pages/pharmacy/InventoryListPage';
+import InventoryDetailPage from './pages/pharmacy/InventoryDetailPage';
+import InventoryFormPage from './pages/pharmacy/InventoryFormPage';
 
 export default function App() {
   return (
@@ -37,7 +40,10 @@ export default function App() {
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
         <Route path="/visits/new" element={<NewVisitPage />} />
         <Route path="/visits/:id" element={<VisitDetailPage />} />
-        <Route path="/pharmacy" element={<PlaceholderPage title="Pharmacy & Inventory" />} />
+        <Route path="/pharmacy" element={<InventoryListPage />} />
+        <Route path="/pharmacy/new" element={<InventoryFormPage />} />
+        <Route path="/pharmacy/:id/edit" element={<InventoryFormPage />} />
+        <Route path="/pharmacy/:id" element={<InventoryDetailPage />} />
         <Route path="/billing" element={<InvoicesPage />} />
         <Route path="/billing/new" element={<NewInvoicePage />} />
         <Route path="/billing/:id" element={<InvoiceDetailPage />} />

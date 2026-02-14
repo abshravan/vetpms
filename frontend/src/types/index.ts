@@ -623,3 +623,150 @@ export interface RecordPaymentData {
   paymentDate?: string;
   notes?: string;
 }
+
+// ── Pharmacy & Inventory ──
+
+export type ItemCategory = 'medication' | 'vaccine' | 'surgical_supply' | 'lab_supply' | 'food' | 'supplement' | 'equipment' | 'consumable' | 'other';
+export type ItemUnit = 'tablet' | 'capsule' | 'ml' | 'mg' | 'g' | 'dose' | 'vial' | 'bottle' | 'box' | 'pack' | 'unit' | 'other';
+export type TransactionType = 'purchase' | 'dispensed' | 'adjustment' | 'return' | 'expired' | 'damaged' | 'transfer';
+
+export const ITEM_CATEGORY_OPTIONS: { value: ItemCategory; label: string }[] = [
+  { value: 'medication', label: 'Medication' },
+  { value: 'vaccine', label: 'Vaccine' },
+  { value: 'surgical_supply', label: 'Surgical Supply' },
+  { value: 'lab_supply', label: 'Lab Supply' },
+  { value: 'food', label: 'Food' },
+  { value: 'supplement', label: 'Supplement' },
+  { value: 'equipment', label: 'Equipment' },
+  { value: 'consumable', label: 'Consumable' },
+  { value: 'other', label: 'Other' },
+];
+
+export const ITEM_UNIT_OPTIONS: { value: ItemUnit; label: string }[] = [
+  { value: 'tablet', label: 'Tablet' },
+  { value: 'capsule', label: 'Capsule' },
+  { value: 'ml', label: 'mL' },
+  { value: 'mg', label: 'mg' },
+  { value: 'g', label: 'g' },
+  { value: 'dose', label: 'Dose' },
+  { value: 'vial', label: 'Vial' },
+  { value: 'bottle', label: 'Bottle' },
+  { value: 'box', label: 'Box' },
+  { value: 'pack', label: 'Pack' },
+  { value: 'unit', label: 'Unit' },
+  { value: 'other', label: 'Other' },
+];
+
+export const TRANSACTION_TYPE_LABELS: Record<TransactionType, string> = {
+  purchase: 'Purchase',
+  dispensed: 'Dispensed',
+  adjustment: 'Adjustment',
+  return: 'Return',
+  expired: 'Expired',
+  damaged: 'Damaged',
+  transfer: 'Transfer',
+};
+
+export const TRANSACTION_TYPE_COLORS: Record<TransactionType, 'success' | 'error' | 'warning' | 'info' | 'default'> = {
+  purchase: 'success',
+  dispensed: 'info',
+  adjustment: 'warning',
+  return: 'success',
+  expired: 'error',
+  damaged: 'error',
+  transfer: 'default',
+};
+
+export interface InventoryItem {
+  id: string;
+  sku: string;
+  name: string;
+  description: string | null;
+  category: ItemCategory;
+  unit: ItemUnit;
+  manufacturer: string | null;
+  supplier: string | null;
+  costPrice: number;
+  sellingPrice: number;
+  quantityOnHand: number;
+  reorderLevel: number;
+  reorderQuantity: number;
+  lotNumber: string | null;
+  expirationDate: string | null;
+  location: string | null;
+  isActive: boolean;
+  requiresPrescription: boolean;
+  isControlledSubstance: boolean;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateInventoryItemData {
+  sku: string;
+  name: string;
+  description?: string;
+  category?: ItemCategory;
+  unit?: ItemUnit;
+  manufacturer?: string;
+  supplier?: string;
+  costPrice?: number;
+  sellingPrice?: number;
+  quantityOnHand?: number;
+  reorderLevel?: number;
+  reorderQuantity?: number;
+  lotNumber?: string;
+  expirationDate?: string;
+  location?: string;
+  requiresPrescription?: boolean;
+  isControlledSubstance?: boolean;
+  notes?: string;
+}
+
+export interface UpdateInventoryItemData {
+  sku?: string;
+  name?: string;
+  description?: string;
+  category?: ItemCategory;
+  unit?: ItemUnit;
+  manufacturer?: string;
+  supplier?: string;
+  costPrice?: number;
+  sellingPrice?: number;
+  reorderLevel?: number;
+  reorderQuantity?: number;
+  lotNumber?: string;
+  expirationDate?: string;
+  location?: string;
+  isActive?: boolean;
+  requiresPrescription?: boolean;
+  isControlledSubstance?: boolean;
+  notes?: string;
+}
+
+export interface InventoryTransaction {
+  id: string;
+  itemId: string;
+  item?: InventoryItem;
+  type: TransactionType;
+  quantity: number;
+  quantityAfter: number;
+  unitCost: number | null;
+  patientId: string | null;
+  visitId: string | null;
+  performedById: string | null;
+  reference: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CreateTransactionData {
+  itemId: string;
+  type: TransactionType;
+  quantity: number;
+  unitCost?: number;
+  patientId?: string;
+  visitId?: string;
+  reference?: string;
+  notes?: string;
+}
