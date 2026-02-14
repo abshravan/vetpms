@@ -3,6 +3,7 @@ import LoginPage from './auth/LoginPage';
 import ProtectedRoute from './auth/ProtectedRoute';
 import AppLayout from './layout/AppLayout';
 import DashboardPage from './pages/DashboardPage';
+import ReportsPage from './pages/ReportsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import ClientsListPage from './pages/clients/ClientsListPage';
 import ClientDetailPage from './pages/clients/ClientDetailPage';
@@ -40,7 +41,7 @@ export default function App() {
         <Route path="/billing" element={<InvoicesPage />} />
         <Route path="/billing/new" element={<NewInvoicePage />} />
         <Route path="/billing/:id" element={<InvoiceDetailPage />} />
-        <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
       </Route>
     </Routes>
