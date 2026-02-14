@@ -868,3 +868,52 @@ export interface UpdateClinicSettingsData {
   invoiceFooter?: string;
   logoUrl?: string;
 }
+
+// ── Notifications ──
+
+export type NotificationType = 'vaccination_due' | 'preventive_care_overdue' | 'low_stock' | 'expiring_inventory' | 'appointment_reminder' | 'invoice_overdue' | 'system';
+export type NotificationPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  vaccination_due: 'Vaccination Due',
+  preventive_care_overdue: 'Preventive Care Overdue',
+  low_stock: 'Low Stock',
+  expiring_inventory: 'Expiring Inventory',
+  appointment_reminder: 'Appointment Reminder',
+  invoice_overdue: 'Invoice Overdue',
+  system: 'System',
+};
+
+export const NOTIFICATION_PRIORITY_COLORS: Record<NotificationPriority, 'default' | 'info' | 'warning' | 'error'> = {
+  low: 'default',
+  medium: 'info',
+  high: 'warning',
+  urgent: 'error',
+};
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  priority: NotificationPriority;
+  title: string;
+  message: string;
+  referenceId: string | null;
+  referenceType: string | null;
+  isRead: boolean;
+  isDismissed: boolean;
+  createdAt: string;
+}
+
+// ── Audit Log ──
+
+export interface AuditLogEntry {
+  id: string;
+  action: string;
+  resource: string;
+  resourceId: string | null;
+  userId: string | null;
+  userEmail: string | null;
+  details: Record<string, unknown> | null;
+  ipAddress: string | null;
+  createdAt: string;
+}
