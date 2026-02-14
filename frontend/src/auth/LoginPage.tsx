@@ -15,8 +15,8 @@ import { useAuth } from './AuthContext';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@vetpms.dev');
+  const [password, setPassword] = useState('anything');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -29,7 +29,7 @@ export default function LoginPage() {
       await login(email, password);
       navigate('/');
     } catch {
-      setError('Invalid email or password');
+      setError('Login failed');
     } finally {
       setSubmitting(false);
     }
@@ -55,19 +55,21 @@ export default function LoginPage() {
               Veterinary Practice Management
             </Typography>
 
+            <Alert severity="info" variant="outlined">
+              Dev mode — enter any email/password to sign in.
+            </Alert>
+
             {error && <Alert severity="error">{error}</Alert>}
 
             <form onSubmit={handleSubmit}>
               <Stack spacing={2}>
                 <TextField
                   label="Email"
-                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   fullWidth
                   autoFocus
-                  autoComplete="email"
                 />
                 <TextField
                   label="Password"
@@ -76,7 +78,6 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   fullWidth
-                  autoComplete="current-password"
                 />
                 <Button
                   type="submit"
