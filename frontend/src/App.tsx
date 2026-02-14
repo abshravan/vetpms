@@ -19,6 +19,7 @@ import InventoryListPage from './pages/pharmacy/InventoryListPage';
 import InventoryDetailPage from './pages/pharmacy/InventoryDetailPage';
 import InventoryFormPage from './pages/pharmacy/InventoryFormPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/billing/new" element={<NewInvoicePage />} />
         <Route path="/billing/:id" element={<InvoiceDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
