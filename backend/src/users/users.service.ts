@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -50,7 +51,31 @@ export class UsersService {
 
   async findAll(): Promise<User[]> {
     return this.usersRepository.find({
-      select: ['id', 'firstName', 'lastName', 'email', 'role', 'phone', 'isActive', 'createdAt'],
+      select: ['id', 'firstName', 'lastName', 'email', 'role', 'phone', 'specialty', 'licenseNumber', 'isActive', 'createdAt'],
     });
+  }
+
+  async update(id: string, dto: UpdateUserDto): Promise<User> {
+    const user = await this.findById(id);
+
+    if (dto.password) {
+      user.passwordHash = await bcrypt.hash(dto.password, 12);
+    }
+
+    if (dto.firstName !== undefined) user.firstName = dto.firstName;
+    if (dto.lastName !== undefined) user.lastName = dto.lastName;
+    if (dto.role !== undefined) user.role = dto.role;
+    if (dto.phone !== undefined) user.phone = dto.phone;
+    if (dto.specialty !== undefined) user.specialty = dto.specialty;
+    if (dto.licenseNumber !== undefined) user.licenseNumber = dto.licenseNumber;
+    if (dto.isActive !== undefined) user.isActive = dto.isActive;
+
+    return this.usersRepository.save(user);
+  }
+
+  async deactivate(id: string): Promise<User> {
+    const user = await this.findById(id);
+    user.isActive = false;
+    return this.usersRepository.save(user);
   }
 }
