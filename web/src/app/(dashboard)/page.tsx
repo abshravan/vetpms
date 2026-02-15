@@ -2,33 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Typography,
-  Paper,
-  Grid,
-  Box,
-  CircularProgress,
-  Alert,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Divider,
-} from '@mui/material';
-import {
-  People as PeopleIcon,
-  Pets as PetsIcon,
-  CalendarMonth as CalendarIcon,
-  MedicalServices as VisitIcon,
-  Receipt as InvoiceIcon,
-  AttachMoney as MoneyIcon,
-  Vaccines as VaccineIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
+  Users,
+  PawPrint,
+  CalendarDays,
+  Stethoscope,
+  Receipt,
+  DollarSign,
+  Syringe,
+  AlertTriangle,
+  Loader2,
+  CalendarClock,
+  ClipboardList,
+} from 'lucide-react';
+import { Chip } from '@mui/material';
 import { reportsApi, DashboardStats } from '../../api/reports';
+import { cn } from '../../lib/utils';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'info' | 'error'> = {
   open: 'default',
@@ -37,6 +27,16 @@ const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'info' |
   scheduled: 'default',
   confirmed: 'info',
   checked_in: 'warning',
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04 } },
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
 };
 
 export default function DashboardPage() {
@@ -54,157 +54,160 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
+
   if (error || !stats) {
-    return <Alert severity="error">{error || 'Failed to load'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Failed to load'}</p>
+      </div>
+    );
   }
 
   const fmt = (n: number) => `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const statCards = [
-    { label: 'Clients', value: stats.totalClients, icon: <PeopleIcon />, color: '#2e7d32', link: '/clients' },
-    { label: 'Patients', value: stats.totalPatients, icon: <PetsIcon />, color: '#1565c0', link: '/patients' },
-    { label: "Today's Appts", value: stats.todayAppointments, icon: <CalendarIcon />, color: '#e65100', link: '/appointments' },
-    { label: 'Open Visits', value: stats.openVisits, icon: <VisitIcon />, color: '#6a1b9a' },
-    { label: 'Pending Invoices', value: stats.pendingInvoices, icon: <InvoiceIcon />, color: '#c62828', link: '/billing' },
-    { label: 'Outstanding', value: fmt(stats.outstandingBalance), icon: <MoneyIcon />, color: '#c62828', link: '/billing' },
-    { label: 'Vaccines Due (30d)', value: stats.upcomingVaccinations, icon: <VaccineIcon />, color: '#f57f17' },
-    { label: 'Overdue Care', value: stats.overduePreventiveCare, icon: <WarningIcon />, color: '#d32f2f' },
+    { label: 'Clients', value: stats.totalClients, icon: Users, accent: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/30', link: '/clients' },
+    { label: 'Patients', value: stats.totalPatients, icon: PawPrint, accent: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30', link: '/patients' },
+    { label: "Today's Appts", value: stats.todayAppointments, icon: CalendarDays, accent: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-950/30', link: '/appointments' },
+    { label: 'Open Visits', value: stats.openVisits, icon: Stethoscope, accent: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+    { label: 'Pending Invoices', value: stats.pendingInvoices, icon: Receipt, accent: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/30', link: '/billing' },
+    { label: 'Outstanding', value: fmt(stats.outstandingBalance), icon: DollarSign, accent: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-950/30', link: '/billing' },
+    { label: 'Vaccines Due (30d)', value: stats.upcomingVaccinations, icon: Syringe, accent: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Overdue Care', value: stats.overduePreventiveCare, icon: AlertTriangle, accent: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/30' },
   ];
 
   return (
-    <Box>
-      <Typography variant="h6" gutterBottom>Dashboard</Typography>
+    <div>
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">Dashboard</h1>
 
       {/* Stat Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4"
+      >
         {statCards.map((card) => (
-          <Grid item xs={6} sm={3} key={card.label}>
-            <Paper
-              sx={{
-                p: 2,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                cursor: card.link ? 'pointer' : 'default',
-                '&:hover': card.link ? { bgcolor: 'action.hover' } : {},
-              }}
+          <motion.div key={card.label} variants={fadeUp}>
+            <div
               onClick={() => card.link && router.push(card.link)}
+              className={cn(
+                'group relative overflow-hidden rounded-xl border border-border bg-card p-4 transition-all duration-200',
+                card.link && 'cursor-pointer hover:border-primary/30 hover:shadow-md',
+              )}
             >
-              <Box sx={{ color: card.color, display: 'flex' }}>{card.icon}</Box>
-              <Box>
-                <Typography variant="h5" fontWeight={700} color={card.color}>
-                  {card.value}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">{card.label}</Typography>
-              </Box>
-            </Paper>
-          </Grid>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {card.label}
+                  </p>
+                  <p className={cn('mt-1.5 text-2xl font-bold tabular-nums', card.accent)}>
+                    {card.value}
+                  </p>
+                </div>
+                <div className={cn('rounded-lg p-2', card.bg)}>
+                  <card.icon className={cn('h-4 w-4', card.accent)} />
+                </div>
+              </div>
+            </div>
+          </motion.div>
         ))}
-      </Grid>
+      </motion.div>
 
-      <Grid container spacing={2}>
+      {/* Tables Row */}
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Today's Schedule */}
-        <Grid item xs={12} md={6}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Today's Schedule</Typography>
-            <Divider sx={{ mb: 1 }} />
-            {stats.todaySchedule.length > 0 ? (
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Time</TableCell>
-                      <TableCell>Patient</TableCell>
-                      <TableCell>Client</TableCell>
-                      <TableCell>Vet</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {stats.todaySchedule.map((appt) => (
-                      <TableRow
-                        key={appt.id}
-                        hover
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => router.push(`/appointments/${appt.id}`)}
-                      >
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </TableCell>
-                        <TableCell>{appt.patientName}</TableCell>
-                        <TableCell>{appt.clientName}</TableCell>
-                        <TableCell>{appt.vetName}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={appt.status.replace('_', ' ')}
-                            size="small"
-                            color={STATUS_COLORS[appt.status] || 'default'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                No appointments scheduled for today.
-              </Typography>
-            )}
-          </Paper>
-        </Grid>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="rounded-xl border border-border bg-card"
+        >
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+            <CalendarClock className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">Today&apos;s Schedule</h2>
+          </div>
+
+          {stats.todaySchedule.length > 0 ? (
+            <div className="divide-y divide-border">
+              {stats.todaySchedule.map((appt) => (
+                <div
+                  key={appt.id}
+                  onClick={() => router.push(`/appointments/${appt.id}`)}
+                  className="flex cursor-pointer items-center gap-4 px-5 py-3 transition-colors hover:bg-muted/50"
+                >
+                  <span className="w-14 shrink-0 text-xs font-medium tabular-nums text-muted-foreground">
+                    {new Date(appt.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{appt.patientName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{appt.clientName} &middot; {appt.vetName}</p>
+                  </div>
+                  <Chip
+                    label={appt.status.replace('_', ' ')}
+                    size="small"
+                    color={STATUS_COLORS[appt.status] || 'default'}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <CalendarDays className="mb-2 h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">No appointments scheduled for today.</p>
+            </div>
+          )}
+        </motion.div>
 
         {/* Recent Visits */}
-        <Grid item xs={12} md={6}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Recent Visits</Typography>
-            <Divider sx={{ mb: 1 }} />
-            {stats.recentVisits.length > 0 ? (
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Patient</TableCell>
-                      <TableCell>Complaint</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {stats.recentVisits.map((visit) => (
-                      <TableRow
-                        key={visit.id}
-                        hover
-                        sx={{ cursor: 'pointer' }}
-                        onClick={() => router.push(`/visits/${visit.id}`)}
-                      >
-                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                          {new Date(visit.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>{visit.patientName}</TableCell>
-                        <TableCell>{visit.chiefComplaint || '—'}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={visit.status.replace('_', ' ')}
-                            size="small"
-                            color={STATUS_COLORS[visit.status] || 'default'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                No visits recorded yet.
-              </Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.4 }}
+          className="rounded-xl border border-border bg-card"
+        >
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3.5">
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold">Recent Visits</h2>
+          </div>
+
+          {stats.recentVisits.length > 0 ? (
+            <div className="divide-y divide-border">
+              {stats.recentVisits.map((visit) => (
+                <div
+                  key={visit.id}
+                  onClick={() => router.push(`/visits/${visit.id}`)}
+                  className="flex cursor-pointer items-center gap-4 px-5 py-3 transition-colors hover:bg-muted/50"
+                >
+                  <span className="w-20 shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {new Date(visit.createdAt).toLocaleDateString()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{visit.patientName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{visit.chiefComplaint || 'No complaint noted'}</p>
+                  </div>
+                  <Chip
+                    label={visit.status.replace('_', ' ')}
+                    size="small"
+                    color={STATUS_COLORS[visit.status] || 'default'}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <ClipboardList className="mb-2 h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">No visits recorded yet.</p>
+            </div>
+          )}
+        </motion.div>
+      </div>
+    </div>
   );
 }
