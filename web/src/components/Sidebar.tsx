@@ -11,9 +11,10 @@ import {
   Receipt,
   BarChart3,
   Settings,
+  Bell,
 } from 'lucide-react';
 
-export const SIDEBAR_WIDTH = 240;
+export const SIDEBAR_WIDTH = 260;
 
 const navGroups = [
   {
@@ -41,6 +42,7 @@ const navGroups = [
   {
     label: 'System',
     items: [
+      { label: 'Notifications', icon: Bell, path: '/notifications' },
       { label: 'Settings', icon: Settings, path: '/settings' },
     ],
   },
@@ -60,24 +62,30 @@ export default function Sidebar() {
       className="fixed inset-y-0 left-0 z-30 flex flex-col border-r border-sidebar-border bg-sidebar"
       style={{ width: SIDEBAR_WIDTH }}
     >
-      {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <PawPrint className="h-4.5 w-4.5 text-primary-foreground" />
+      {/* Logo area with gradient accent */}
+      <div className="relative flex h-16 items-center gap-3 px-5">
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-md glow-primary">
+          <PawPrint className="h-[18px] w-[18px] text-primary-foreground" />
         </div>
-        <span className="text-lg font-bold tracking-tight text-sidebar-foreground">
-          VetPMS
-        </span>
+        <div>
+          <span className="text-[15px] font-bold tracking-tight text-sidebar-foreground">
+            VetPMS
+          </span>
+          <p className="text-[10px] font-medium text-muted-foreground">
+            Practice Management
+          </p>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
         {navGroups.map((group) => (
-          <div key={group.label} className="mb-5">
-            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div key={group.label} className="mb-6">
+            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/70">
               {group.label}
             </p>
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(item.path);
                 return (
@@ -86,16 +94,21 @@ export default function Sidebar() {
                       onClick={() => router.push(item.path)}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-150',
+                        'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
                         active
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
-                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+                          : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground',
                       )}
                     >
+                      {active && (
+                        <div className="absolute -left-3 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary" />
+                      )}
                       <item.icon
                         className={cn(
-                          'h-4 w-4 shrink-0 transition-colors',
-                          active ? 'text-primary' : 'text-muted-foreground group-hover:text-sidebar-foreground',
+                          'h-[18px] w-[18px] shrink-0 transition-all duration-200',
+                          active
+                            ? 'text-primary'
+                            : 'text-muted-foreground/70 group-hover:text-sidebar-foreground',
                         )}
                       />
                       {item.label}
@@ -109,10 +122,16 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom branding */}
-      <div className="border-t border-sidebar-border px-5 py-3">
-        <p className="text-[11px] text-muted-foreground">
-          Veterinary Practice<br />Management System
-        </p>
+      <div className="relative px-5 py-4">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
+        <div className="rounded-xl bg-gradient-to-br from-primary/[0.06] to-transparent p-3">
+          <p className="text-[11px] font-medium text-muted-foreground">
+            Veterinary Practice
+          </p>
+          <p className="text-[10px] text-muted-foreground/60">
+            Management System v1.0
+          </p>
+        </div>
       </div>
     </aside>
   );
