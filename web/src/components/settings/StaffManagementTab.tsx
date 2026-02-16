@@ -23,7 +23,7 @@ import {
   Typography,
   Stack,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import { usersApi } from '../../api/settings';
 import {
   UserProfile,
@@ -142,7 +142,7 @@ export default function StaffManagementTab() {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="subtitle2">Staff Members</Typography>
-        <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button variant="contained" size="small" startIcon={<Plus className="h-4 w-4" />} onClick={openCreate}>
           Add Staff
         </Button>
       </Box>

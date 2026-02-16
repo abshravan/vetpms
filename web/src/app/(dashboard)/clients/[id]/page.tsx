@@ -14,12 +14,7 @@ import {
   Divider,
   Typography,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Add as AddIcon,
-  Pets as PetsIcon,
-} from '@mui/icons-material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, Plus, PawPrint } from 'lucide-react';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
 import { Client, CreateClientData, CreatePatientData } from '../../../../types';
@@ -115,7 +110,7 @@ export default function ClientDetailPage() {
           size="small"
           color={client.isActive ? 'success' : 'default'}
         />
-        <Button startIcon={<EditIcon />} onClick={() => setEditDialogOpen(true)}>
+        <Button startIcon={<Pencil className="h-4 w-4" />} onClick={() => setEditDialogOpen(true)}>
           Edit
         </Button>
       </div>
@@ -159,7 +154,7 @@ export default function ClientDetailPage() {
         <Typography variant="subtitle1" fontWeight={600}>
           Patients ({client.patients?.length ?? 0})
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setPatientDialogOpen(true)}>
+        <Button variant="contained" startIcon={<Plus className="h-4 w-4" />} onClick={() => setPatientDialogOpen(true)}>
           Add Patient
         </Button>
       </Box>
@@ -172,7 +167,7 @@ export default function ClientDetailPage() {
                 <CardActionArea onClick={() => router.push(`/patients/${patient.id}`)}>
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <PetsIcon color="primary" fontSize="small" />
+                      <PawPrint className="h-4 w-4 text-primary" />
                       <Typography variant="subtitle2" fontWeight={600}>
                         {patient.name}
                       </Typography>
@@ -218,7 +213,7 @@ export default function ClientDetailPage() {
         </Grid>
       ) : (
         <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
-          <PetsIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+          <PawPrint className="h-12 w-12 text-muted-foreground/40 mb-2" />
           <Typography variant="body2" color="text.secondary">
             No patients registered. Click "Add Patient" to register an animal.
           </Typography>

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -12,15 +11,12 @@ import {
   TableRow,
   TablePagination,
   Chip,
-  IconButton,
   Stack,
   Alert,
   FormControlLabel,
   Switch,
 } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Check, X } from 'lucide-react';
 import { notificationsApi } from '../../../api/notifications';
 import {
   AppNotification,
@@ -174,16 +170,26 @@ export default function NotificationsPage() {
                     {new Date(notif.createdAt).toLocaleString()}
                   </TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Stack direction="row" spacing={0.5}>
+                    <div className="flex items-center gap-1">
                       {!notif.isRead && (
-                        <IconButton size="small" title="Mark read" onClick={() => handleMarkRead(notif.id)}>
-                          <CheckIcon fontSize="small" />
-                        </IconButton>
+                        <button
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          title="Mark read"
+                          aria-label="Mark as read"
+                          onClick={() => handleMarkRead(notif.id)}
+                        >
+                          <Check className="h-4 w-4" />
+                        </button>
                       )}
-                      <IconButton size="small" title="Dismiss" onClick={() => handleDismiss(notif.id)}>
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
+                      <button
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        title="Dismiss"
+                        aria-label="Dismiss notification"
+                        onClick={() => handleDismiss(notif.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

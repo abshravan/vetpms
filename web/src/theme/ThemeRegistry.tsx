@@ -19,11 +19,11 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
               }
             : {
                 primary: { main: '#818cf8' },
-                background: { default: '#0f1117', paper: '#1a1d2e' },
+                background: { default: '#1a1a2e', paper: '#24243e' },
               }),
         },
         typography: {
-          fontFamily: 'var(--font-inter), "Inter", system-ui, sans-serif',
+          fontFamily: 'var(--font-sans), "Inter", system-ui, sans-serif',
         },
         shape: { borderRadius: 8 },
         components: {

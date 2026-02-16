@@ -24,8 +24,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { Delete as DeleteIcon } from '@mui/icons-material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import {
   Invoice,
@@ -233,7 +232,7 @@ export default function InvoiceDetailPage() {
                   {canEdit && (
                     <TableCell>
                       <IconButton size="small" color="error" onClick={() => handleRemoveItem(item.id)}>
-                        <DeleteIcon fontSize="small" />
+                        <Trash2 className="h-4 w-4" />
                       </IconButton>
                     </TableCell>
                   )}

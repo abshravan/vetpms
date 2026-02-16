@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Paper,
   Chip,
-  TextField,
   Alert,
   Table,
   TableBody,
@@ -15,7 +13,7 @@ import {
   TableRow,
   TablePagination,
 } from '@mui/material';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2 } from 'lucide-react';
 import { billingApi } from '../../../api/billing';
 import {
   Invoice,
@@ -71,14 +69,15 @@ export default function InvoicesPage() {
         </button>
       </div>
 
-      <TextField
-        placeholder="Search by invoice # or client name..."
-        value={search}
-        onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        fullWidth
-        size="small"
-        sx={{ mb: 2 }}
-      />
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          placeholder="Search by invoice # or client name..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -123,7 +122,7 @@ export default function InvoicesPage() {
                     <TableCell align="right">{fmt(inv.amountPaid)}</TableCell>
                     <TableCell align="right">
                       <span
-                        className={`text-sm ${Number(inv.balanceDue) > 0 ? 'font-semibold text-red-600' : ''}`}
+                        className={`text-sm ${Number(inv.balanceDue) > 0 ? 'font-semibold text-destructive' : ''}`}
                       >
                         {fmt(inv.balanceDue)}
                       </span>

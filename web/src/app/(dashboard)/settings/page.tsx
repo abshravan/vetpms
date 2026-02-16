@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Tabs, Tab } from '@mui/material';
-import { Settings, Building2, Users, ScrollText } from 'lucide-react';
+import { Building2, Users, ScrollText } from 'lucide-react';
 import ClinicSettingsTab from '../../../components/settings/ClinicSettingsTab';
 import StaffManagementTab from '../../../components/settings/StaffManagementTab';
 import AuditLogTab from '../../../components/settings/AuditLogTab';
