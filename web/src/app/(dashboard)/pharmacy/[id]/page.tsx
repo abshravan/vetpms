@@ -24,7 +24,7 @@ import {
   Alert,
   Stack,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { inventoryApi } from '../../../../api/inventory';
 import {
   InventoryItem,
@@ -98,11 +98,17 @@ export default function InventoryDetailPage() {
   };
 
   if (!item) {
+    if (error) {
+      return (
+        <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      );
+    }
     return (
-      <Box>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Typography>Loading...</Typography>
-      </Box>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
@@ -111,22 +117,26 @@ export default function InventoryDetailPage() {
   const catLabel = ITEM_CATEGORY_OPTIONS.find((o) => o.value === item.category)?.label || item.category;
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => router.push('/pharmacy')} sx={{ mb: 2 }}>
+    <div>
+      <Button startIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => router.push('/pharmacy')} sx={{ mb: 2 }}>
         Back to Inventory
       </Button>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6 mb-2">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       {/* Header */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap">
           <Box>
-            <Typography variant="h6">
+            <h1 className="text-2xl font-bold tracking-tight">
               {item.name}
               {item.requiresPrescription && <Chip label="Rx" size="small" color="info" sx={{ ml: 1 }} />}
               {item.isControlledSubstance && <Chip label="CII" size="small" color="error" sx={{ ml: 0.5 }} />}
-            </Typography>
+            </h1>
             <Typography variant="body2" color="text.secondary">
               SKU: {item.sku} &bull; {catLabel} &bull; Unit: {item.unit}
             </Typography>
@@ -195,7 +205,7 @@ export default function InventoryDetailPage() {
 
       {/* Details */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Details</Typography>
+        <h2 className="text-sm font-semibold mb-1">Details</h2>
         <Grid container spacing={1}>
           {item.lotNumber && (
             <Grid item xs={6} sm={4}><Typography variant="body2"><strong>Lot #:</strong> {item.lotNumber}</Typography></Grid>
@@ -218,7 +228,7 @@ export default function InventoryDetailPage() {
       {/* Transaction History */}
       <Paper variant="outlined">
         <Box sx={{ p: 2, pb: 0 }}>
-          <Typography variant="subtitle2">Transaction History</Typography>
+          <h2 className="text-sm font-semibold">Transaction History</h2>
         </Box>
         <TableContainer>
           <Table size="small">
@@ -350,6 +360,6 @@ export default function InventoryDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }

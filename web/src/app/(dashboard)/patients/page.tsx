@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
-  Typography,
   TextField,
   Table,
   TableBody,
@@ -15,13 +13,12 @@ import {
   Paper,
   Chip,
   TablePagination,
-  InputAdornment,
   MenuItem,
 } from '@mui/material';
 import {
-  Search as SearchIcon,
   Pets as PetsIcon,
 } from '@mui/icons-material';
+import { Search, PawPrint as PawPrintIcon, Loader2 } from 'lucide-react';
 import { patientsApi } from '../../../api/patients';
 import { Patient, PaginatedResult, Species, SPECIES_OPTIONS } from '../../../types';
 
@@ -74,23 +71,23 @@ export default function PatientsListPage() {
   };
 
   return (
-    <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>Patients</Typography>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Patients</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Browse and manage patient records</p>
+      </div>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-        <TextField
-          placeholder="Search by name, owner, or microchip..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ flexGrow: 1 }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
-              </InputAdornment>
-            ),
-          }}
-        />
+      <div className="flex gap-4 mb-4">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by name, owner, or microchip..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
         <TextField
           label="Species"
           value={speciesFilter}
@@ -103,88 +100,100 @@ export default function PatientsListPage() {
             <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
           ))}
         </TextField>
-      </Box>
+      </div>
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Species</TableCell>
-              <TableCell>Breed</TableCell>
-              <TableCell>Owner</TableCell>
-              <TableCell>Age</TableCell>
-              <TableCell>Weight</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading && !result ? (
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <TableContainer>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={7} align="center">Loading...</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Species</TableCell>
+                <TableCell>Breed</TableCell>
+                <TableCell>Owner</TableCell>
+                <TableCell>Age</TableCell>
+                <TableCell>Weight</TableCell>
+                <TableCell>Status</TableCell>
               </TableRow>
-            ) : result && result.data.length > 0 ? (
-              result.data.map((patient) => (
-                <TableRow
-                  key={patient.id}
-                  hover
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/patients/${patient.id}`)}
-                >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <PetsIcon fontSize="small" color="primary" />
-                      <Typography variant="body2" fontWeight={500}>{patient.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ textTransform: 'capitalize' }}>{patient.species}</TableCell>
-                  <TableCell>{patient.breed || '—'}</TableCell>
-                  <TableCell>
-                    {patient.client
-                      ? `${patient.client.lastName}, ${patient.client.firstName}`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>{formatAge(patient.dateOfBirth)}</TableCell>
-                  <TableCell>
-                    {patient.weight ? `${patient.weight} ${patient.weightUnit || 'kg'}` : '—'}
-                  </TableCell>
-                  <TableCell>
-                    {patient.isDeceased ? (
-                      <Chip label="Deceased" size="small" />
-                    ) : (
-                      <Chip
-                        label={patient.isActive ? 'Active' : 'Inactive'}
-                        size="small"
-                        color={patient.isActive ? 'success' : 'default'}
-                      />
-                    )}
+            </TableHead>
+            <TableBody>
+              {loading && !result ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading patients...</span>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  {search || speciesFilter ? 'No patients match your filters' : 'No patients registered yet.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        {result && (
-          <TablePagination
-            component="div"
-            count={result.total}
-            page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-            rowsPerPageOptions={[10, 20, 50]}
-          />
-        )}
-      </TableContainer>
-    </Box>
+              ) : result && result.data.length > 0 ? (
+                result.data.map((patient) => (
+                  <TableRow
+                    key={patient.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/patients/${patient.id}`)}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <PetsIcon fontSize="small" color="primary" />
+                        <span className="text-sm font-medium">{patient.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell sx={{ textTransform: 'capitalize' }}>{patient.species}</TableCell>
+                    <TableCell>{patient.breed || '—'}</TableCell>
+                    <TableCell>
+                      {patient.client
+                        ? `${patient.client.lastName}, ${patient.client.firstName}`
+                        : '—'}
+                    </TableCell>
+                    <TableCell>{formatAge(patient.dateOfBirth)}</TableCell>
+                    <TableCell>
+                      {patient.weight ? `${patient.weight} ${patient.weightUnit || 'kg'}` : '—'}
+                    </TableCell>
+                    <TableCell>
+                      {patient.isDeceased ? (
+                        <Chip label="Deceased" size="small" />
+                      ) : (
+                        <Chip
+                          label={patient.isActive ? 'Active' : 'Inactive'}
+                          size="small"
+                          color={patient.isActive ? 'success' : 'default'}
+                        />
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <div className="flex flex-col items-center gap-2">
+                      <PawPrintIcon className="h-8 w-8 text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">
+                        {search || speciesFilter ? 'No patients match your filters' : 'No patients registered yet.'}
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          {result && (
+            <TablePagination
+              component="div"
+              count={result.total}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[10, 20, 50]}
+            />
+          )}
+        </TableContainer>
+      </div>
+    </div>
   );
 }

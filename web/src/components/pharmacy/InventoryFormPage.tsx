@@ -14,7 +14,7 @@ import {
   Checkbox,
   Alert,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { inventoryApi } from '../../api/inventory';
 import {
   ITEM_CATEGORY_OPTIONS,
@@ -123,17 +123,31 @@ export default function InventoryFormPage() {
   };
 
   return (
-    <Box>
-      <Button startIcon={<ArrowBackIcon />} onClick={() => router.push(isEdit ? `/pharmacy/${id}` : '/pharmacy')} sx={{ mb: 2 }}>
-        Back
-      </Button>
-      <Typography variant="h6" gutterBottom>
-        {isEdit ? 'Edit Inventory Item' : 'Add Inventory Item'}
-      </Typography>
+    <div>
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          onClick={() => router.push(isEdit ? `/pharmacy/${id}` : '/pharmacy')}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {isEdit ? 'Edit Inventory Item' : 'Add Inventory Item'}
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {isEdit ? 'Update item details and pricing' : 'Add a new item to your pharmacy inventory'}
+          </p>
+        </div>
+      </div>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <div className="rounded-xl border border-border bg-card p-5">
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
@@ -207,16 +221,27 @@ export default function InventoryFormPage() {
               />
             </Grid>
             <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end" gap={1}>
-                <Button onClick={() => router.push(isEdit ? `/pharmacy/${id}` : '/pharmacy')}>Cancel</Button>
-                <Button type="submit" variant="contained" disabled={saving}>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => router.push(isEdit ? `/pharmacy/${id}` : '/pharmacy')}
+                  className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium transition-colors hover:bg-accent"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                   {saving ? 'Saving…' : isEdit ? 'Update Item' : 'Create Item'}
-                </Button>
-              </Box>
+                </button>
+              </div>
             </Grid>
           </Grid>
         </form>
-      </Paper>
-    </Box>
+      </div>
+    </div>
   );
 }

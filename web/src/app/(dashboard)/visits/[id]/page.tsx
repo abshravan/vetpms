@@ -9,9 +9,6 @@ import {
   Grid,
   Button,
   Chip,
-  IconButton,
-  CircularProgress,
-  Alert,
   Divider,
   Table,
   TableBody,
@@ -20,7 +17,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
 import {
@@ -119,10 +116,18 @@ export default function VisitDetailPage() {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
   if (error || !visit) {
-    return <Alert severity="error">{error || 'Visit not found'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Visit not found'}</p>
+      </div>
+    );
   }
 
   const isCompleted = visit.status === 'completed';
@@ -130,22 +135,22 @@ export default function VisitDetailPage() {
   const categoryLabel = (c: string) => TREATMENT_CATEGORY_OPTIONS.find((o) => o.value === c)?.label || c;
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.push(`/patients/${visit.patientId}`)}>
-          <BackIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.push(`/patients/${visit.patientId}`)} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight flex-grow">
           Visit — {visit.patient?.name || 'Unknown'}
-        </Typography>
+        </h1>
         <Chip label={visit.status.replace('_', ' ').toUpperCase()} color={STATUS_COLORS[visit.status]} />
         {!isCompleted && (
           <Button variant="contained" color="success" onClick={handleComplete}>
             Complete Visit
           </Button>
         )}
-      </Box>
+      </div>
 
       {/* Visit info */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
@@ -191,7 +196,7 @@ export default function VisitDetailPage() {
 
       {/* Vitals */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Vitals</Typography>
+        <h2 className="text-sm font-semibold mb-1">Vitals</h2>
         <Divider sx={{ mb: 2 }} />
 
         {visit.vitals && visit.vitals.length > 0 && (
@@ -238,7 +243,7 @@ export default function VisitDetailPage() {
 
       {/* Treatments */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Treatments & Procedures</Typography>
+        <h2 className="text-sm font-semibold mb-1">Treatments & Procedures</h2>
         <Divider sx={{ mb: 2 }} />
 
         {treatments.length > 0 && (
@@ -311,7 +316,7 @@ export default function VisitDetailPage() {
 
       {/* Vaccinations */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Vaccinations</Typography>
+        <h2 className="text-sm font-semibold mb-1">Vaccinations</h2>
         <Divider sx={{ mb: 2 }} />
 
         {vaccinations.length > 0 && (
@@ -370,7 +375,7 @@ export default function VisitDetailPage() {
 
       {/* Clinical Notes */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Clinical Notes</Typography>
+        <h2 className="text-sm font-semibold mb-1">Clinical Notes</h2>
         <Divider sx={{ mb: 2 }} />
 
         {visit.clinicalNotes && visit.clinicalNotes.length > 0 && (
@@ -425,6 +430,6 @@ export default function VisitDetailPage() {
           </Typography>
         )}
       </Paper>
-    </Box>
+    </div>
   );
 }

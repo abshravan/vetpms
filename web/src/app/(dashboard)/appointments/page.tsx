@@ -3,29 +3,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
-  Typography,
-  Button,
   TextField,
-  Paper,
   Chip,
-  IconButton,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  ToggleButtonGroup,
-  ToggleButton,
   MenuItem,
 } from '@mui/material';
 import {
-  Add as AddIcon,
+  Plus,
   ChevronLeft,
   ChevronRight,
-  Today as TodayIcon,
-} from '@mui/icons-material';
+  CalendarDays,
+  Loader2,
+} from 'lucide-react';
 import { appointmentsApi } from '../../../api/appointments';
 import { usersApi, UserSummary } from '../../../api/users';
 import {
@@ -35,6 +29,7 @@ import {
   APPOINTMENT_TYPE_OPTIONS,
 } from '../../../types';
 import AppointmentFormDialog from '../../../components/appointments/AppointmentFormDialog';
+import { cn } from '../../../lib/utils';
 
 type ViewMode = 'day' | 'list';
 
@@ -112,51 +107,74 @@ export default function AppointmentsPage() {
     APPOINTMENT_TYPE_OPTIONS.find((t) => t.value === type)?.label || type;
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Appointments</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
-          Book Appointment
-        </Button>
-      </Box>
-
-      {/* Controls */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-        <ToggleButtonGroup
-          value={view}
-          exclusive
-          onChange={(_, v) => v && setView(v)}
-          size="small"
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Appointments</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Schedule and manage patient appointments</p>
+        </div>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
         >
-          <ToggleButton value="day">Day</ToggleButton>
-          <ToggleButton value="list">List</ToggleButton>
-        </ToggleButtonGroup>
+          <Plus className="h-4 w-4" />
+          Book Appointment
+        </button>
+      </div>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <IconButton size="small" onClick={() => navigateDate(-1)}>
-            <ChevronLeft />
-          </IconButton>
-          <Typography variant="body2" sx={{ minWidth: 200, textAlign: 'center' }}>
-            {dateLabel}
-          </Typography>
-          <IconButton size="small" onClick={() => navigateDate(1)}>
-            <ChevronRight />
-          </IconButton>
-          <IconButton
-            size="small"
+      {/* Controls bar */}
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        {/* View toggle */}
+        <div className="inline-flex rounded-lg border border-border bg-muted/50 p-0.5">
+          {(['day', 'list'] as ViewMode[]).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={cn(
+                'rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-all',
+                view === v
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+
+        {/* Date nav */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => navigateDate(-1)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <span className="min-w-[200px] text-center text-sm font-medium">{dateLabel}</span>
+          <button
+            onClick={() => navigateDate(1)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setCurrentDate(formatDate(new Date()))}
             title="Today"
+            className="ml-1 inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <TodayIcon />
-          </IconButton>
-        </Box>
+            <CalendarDays className="h-3.5 w-3.5" />
+            Today
+          </button>
+        </div>
 
+        {/* Vet filter */}
         <TextField
           label="Vet"
           value={vetFilter}
           onChange={(e) => setVetFilter(e.target.value)}
           select
+          size="small"
           sx={{ minWidth: 160 }}
         >
           <MenuItem value="">All Vets</MenuItem>
@@ -166,72 +184,84 @@ export default function AppointmentsPage() {
             </MenuItem>
           ))}
         </TextField>
-      </Box>
+      </div>
 
       {/* Schedule table */}
-      <TableContainer component={Paper} variant="outlined">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Time</TableCell>
-              <TableCell>Patient</TableCell>
-              <TableCell>Owner</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Vet</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Reason</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <TableContainer>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={7} align="center">Loading...</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Patient</TableCell>
+                <TableCell>Owner</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Vet</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Reason</TableCell>
               </TableRow>
-            ) : appointments.length > 0 ? (
-              appointments.map((appt) => (
-                <TableRow
-                  key={appt.id}
-                  hover
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/appointments/${appt.id}`)}
-                >
-                  <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                    {formatTime(appt.startTime)} – {formatTime(appt.endTime)}
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 500 }}>
-                    {appt.patient?.name || '—'}
-                  </TableCell>
-                  <TableCell>
-                    {appt.client
-                      ? `${appt.client.lastName}, ${appt.client.firstName}`
-                      : '—'}
-                  </TableCell>
-                  <TableCell>{typeLabel(appt.type)}</TableCell>
-                  <TableCell>
-                    {appt.vet ? `Dr. ${appt.vet.lastName}` : '—'}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={APPOINTMENT_STATUS_LABELS[appt.status]}
-                      size="small"
-                      color={APPOINTMENT_STATUS_COLORS[appt.status]}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {appt.reason || '—'}
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading appointments...</span>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  No appointments for this {view === 'day' ? 'day' : 'period'}.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ) : appointments.length > 0 ? (
+                appointments.map((appt) => (
+                  <TableRow
+                    key={appt.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/appointments/${appt.id}`)}
+                  >
+                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                      {formatTime(appt.startTime)} – {formatTime(appt.endTime)}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 500 }}>
+                      {appt.patient?.name || '—'}
+                    </TableCell>
+                    <TableCell>
+                      {appt.client
+                        ? `${appt.client.lastName}, ${appt.client.firstName}`
+                        : '—'}
+                    </TableCell>
+                    <TableCell>{typeLabel(appt.type)}</TableCell>
+                    <TableCell>
+                      {appt.vet ? `Dr. ${appt.vet.lastName}` : '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={APPOINTMENT_STATUS_LABELS[appt.status]}
+                        size="small"
+                        color={APPOINTMENT_STATUS_COLORS[appt.status]}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {appt.reason || '—'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <div className="flex flex-col items-center gap-2">
+                      <CalendarDays className="h-8 w-8 text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">
+                        No appointments for this {view === 'day' ? 'day' : 'period'}.
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
 
       <AppointmentFormDialog
         open={dialogOpen}
@@ -239,6 +269,6 @@ export default function AppointmentsPage() {
         onSubmit={handleCreate}
         defaultDate={currentDate}
       />
-    </Box>
+    </div>
   );
 }

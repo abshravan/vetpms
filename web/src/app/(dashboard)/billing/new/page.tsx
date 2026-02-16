@@ -3,11 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Box,
-  Typography,
   Paper,
   Grid,
-  Button,
   TextField,
   IconButton,
   Alert,
@@ -20,7 +17,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowBack as BackIcon, Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { ArrowBack as BackIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Plus } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
@@ -111,13 +109,16 @@ export default function NewInvoicePage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+    <div>
+      <div className="flex items-center gap-2 mb-4">
         <IconButton onClick={() => router.push('/billing')}>
           <BackIcon />
         </IconButton>
-        <Typography variant="h6">New Invoice</Typography>
-      </Box>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">New Invoice</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Create a new invoice for a client</p>
+        </div>
+      </div>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
@@ -178,10 +179,17 @@ export default function NewInvoicePage() {
 
         {/* Line Items */}
         <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="subtitle2">Line Items</Typography>
-            <Button size="small" startIcon={<AddIcon />} onClick={addItem}>Add Item</Button>
-          </Box>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold">Line Items</span>
+            <button
+              type="button"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+              onClick={addItem}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Item
+            </button>
+          </div>
           <Divider sx={{ mb: 2 }} />
           <TableContainer>
             <Table size="small">
@@ -236,7 +244,7 @@ export default function NewInvoicePage() {
                       />
                     </TableCell>
                     <TableCell align="right">
-                      <Typography variant="body2">{fmt(item.lineTotal)}</Typography>
+                      <span className="text-sm">{fmt(item.lineTotal)}</span>
                     </TableCell>
                     <TableCell>
                       {items.length > 1 && (
@@ -252,13 +260,13 @@ export default function NewInvoicePage() {
           </TableContainer>
 
           {/* Totals */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Box sx={{ width: 300 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="body2">Subtotal</Typography>
-                <Typography variant="body2">{fmt(subtotal)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
+          <div className="flex justify-end mt-4">
+            <div className="w-[300px]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm">Subtotal</span>
+                <span className="text-sm">{fmt(subtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between mb-2 gap-2">
                 <TextField
                   label="Tax %"
                   value={taxRate}
@@ -268,9 +276,9 @@ export default function NewInvoicePage() {
                   sx={{ width: 100 }}
                   inputProps={{ step: 0.01, min: 0 }}
                 />
-                <Typography variant="body2">{fmt(taxAmt)}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, gap: 1 }}>
+                <span className="text-sm">{fmt(taxAmt)}</span>
+              </div>
+              <div className="flex items-center justify-between mb-2 gap-2">
                 <TextField
                   label="Discount $"
                   value={discountAmount}
@@ -280,15 +288,15 @@ export default function NewInvoicePage() {
                   sx={{ width: 100 }}
                   inputProps={{ step: 0.01, min: 0 }}
                 />
-                <Typography variant="body2" color="success.main">-{fmt(disc)}</Typography>
-              </Box>
+                <span className="text-sm text-green-600">-{fmt(disc)}</span>
+              </div>
               <Divider sx={{ my: 1 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body1" fontWeight={700}>Total</Typography>
-                <Typography variant="body1" fontWeight={700}>{fmt(total)}</Typography>
-              </Box>
-            </Box>
-          </Box>
+              <div className="flex items-center justify-between">
+                <span className="text-base font-bold">Total</span>
+                <span className="text-base font-bold">{fmt(total)}</span>
+              </div>
+            </div>
+          </div>
         </Paper>
 
         {/* Notes */}
@@ -303,13 +311,23 @@ export default function NewInvoicePage() {
           />
         </Paper>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-          <Button onClick={() => router.push('/billing')}>Cancel</Button>
-          <Button type="submit" variant="contained" disabled={submitting}>
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium shadow-sm transition-all hover:bg-accent active:scale-[0.98]"
+            onClick={() => router.push('/billing')}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+            disabled={submitting}
+          >
             {submitting ? 'Creating...' : 'Create Invoice'}
-          </Button>
-        </Box>
+          </button>
+        </div>
       </form>
-    </Box>
+    </div>
   );
 }

@@ -10,8 +10,6 @@ import {
   Button,
   Chip,
   IconButton,
-  CircularProgress,
-  Alert,
   Divider,
   Table,
   TableBody,
@@ -26,7 +24,8 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { ArrowBack as BackIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon } from '@mui/icons-material';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import {
   Invoice,
@@ -102,25 +101,33 @@ export default function InvoiceDetailPage() {
   const fmt = (n: number | string) => `$${Number(n).toFixed(2)}`;
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
   if (error || !invoice) {
-    return <Alert severity="error">{error || 'Invoice not found'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Invoice not found'}</p>
+      </div>
+    );
   }
 
   const canEdit = invoice.status === 'draft' || invoice.status === 'sent';
   const canPay = invoice.status !== 'paid' && invoice.status !== 'cancelled' && invoice.status !== 'refunded';
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.push('/billing')}>
-          <BackIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.push('/billing')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight flex-grow">
           Invoice {invoice.invoiceNumber}
-        </Typography>
+        </h1>
         <Chip
           label={INVOICE_STATUS_LABELS[invoice.status]}
           color={INVOICE_STATUS_COLORS[invoice.status]}
@@ -144,7 +151,7 @@ export default function InvoiceDetailPage() {
             Cancel
           </Button>
         )}
-      </Box>
+      </div>
 
       {/* Invoice info */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
@@ -198,7 +205,7 @@ export default function InvoiceDetailPage() {
 
       {/* Line Items */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" gutterBottom>Line Items</Typography>
+        <h2 className="text-sm font-semibold mb-1">Line Items</h2>
         <Divider sx={{ mb: 2 }} />
         <TableContainer>
           <Table size="small">
@@ -317,6 +324,6 @@ export default function InvoiceDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }
