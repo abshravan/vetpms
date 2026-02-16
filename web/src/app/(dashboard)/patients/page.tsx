@@ -10,15 +10,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
   TablePagination,
   MenuItem,
 } from '@mui/material';
-import {
-  Pets as PetsIcon,
-} from '@mui/icons-material';
-import { Search, PawPrint as PawPrintIcon, Loader2 } from 'lucide-react';
+import { Search, PawPrint, Loader2 } from 'lucide-react';
 import { patientsApi } from '../../../api/patients';
 import { Patient, PaginatedResult, Species, SPECIES_OPTIONS } from '../../../types';
 
@@ -136,7 +132,7 @@ export default function PatientsListPage() {
                   >
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <PetsIcon fontSize="small" color="primary" />
+                        <PawPrint className="h-4 w-4 text-primary" />
                         <span className="text-sm font-medium">{patient.name}</span>
                       </div>
                     </TableCell>
@@ -168,7 +164,7 @@ export default function PatientsListPage() {
                 <TableRow>
                   <TableCell colSpan={7} align="center">
                     <div className="flex flex-col items-center gap-2">
-                      <PawPrintIcon className="h-8 w-8 text-muted-foreground/40" />
+                      <PawPrint className="h-8 w-8 text-muted-foreground/40" />
                       <p className="text-sm text-muted-foreground">
                         {search || speciesFilter ? 'No patients match your filters' : 'No patients registered yet.'}
                       </p>

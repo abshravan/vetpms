@@ -45,6 +45,7 @@ export default function Header() {
               onClick={toggleTheme}
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
@@ -54,6 +55,7 @@ export default function Header() {
               onClick={() => router.push('/notifications')}
               className="relative inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Notifications"
+              aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
@@ -85,6 +87,7 @@ export default function Header() {
                 'text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive',
               )}
               title="Sign out"
+              aria-label="Sign out"
             >
               <LogOut className="h-4 w-4" />
             </button>

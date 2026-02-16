@@ -9,7 +9,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   Chip,
   TablePagination,
 } from '@mui/material';
@@ -17,7 +16,6 @@ import { Plus, Search, Eye, Users, PawPrint, Loader2 } from 'lucide-react';
 import { clientsApi } from '../../../api/clients';
 import { Client, PaginatedResult } from '../../../types';
 import ClientFormDialog from '../../../components/clients/ClientFormDialog';
-import { cn } from '../../../lib/utils';
 
 export default function ClientsListPage() {
   const router = useRouter();

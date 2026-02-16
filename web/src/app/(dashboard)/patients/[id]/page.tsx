@@ -18,12 +18,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {
-  Edit as EditIcon,
-  Pets as PetsIcon,
-  Warning as WarningIcon,
-} from '@mui/icons-material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, PawPrint, AlertTriangle } from 'lucide-react';
 import { patientsApi } from '../../../../api/patients';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
@@ -135,20 +130,20 @@ export default function PatientProfilePage() {
         <button onClick={() => router.push(patient.client ? `/clients/${patient.clientId}` : '/patients')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <PetsIcon color="primary" />
+        <PawPrint className="h-5 w-5 text-primary" />
         <h1 className="text-2xl font-bold tracking-tight flex-grow">
           {patient.name}
         </h1>
         {patient.isDeceased && <Chip label="Deceased" size="small" />}
         {!patient.isActive && <Chip label="Inactive" size="small" color="default" />}
-        <Button startIcon={<EditIcon />} onClick={() => setEditDialogOpen(true)}>
+        <Button startIcon={<Pencil className="h-4 w-4" />} onClick={() => setEditDialogOpen(true)}>
           Edit
         </Button>
       </div>
 
       {/* Allergy alert */}
       {patient.allergies && (
-        <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
+        <Alert severity="warning" icon={<AlertTriangle className="h-4 w-4" />} sx={{ mb: 2 }}>
           <strong>Allergies:</strong> {patient.allergies}
         </Alert>
       )}

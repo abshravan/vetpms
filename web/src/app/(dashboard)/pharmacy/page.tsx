@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -17,8 +16,7 @@ import {
   Stack,
   Alert,
 } from '@mui/material';
-import { Plus } from 'lucide-react';
-import WarningIcon from '@mui/icons-material/Warning';
+import { Plus, AlertTriangle } from 'lucide-react';
 import { inventoryApi } from '../../../api/inventory';
 import {
   InventoryItem,
@@ -95,12 +93,12 @@ export default function InventoryListPage() {
         <button
           className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium shadow-sm transition-all active:scale-[0.98] ${
             lowStock
-              ? 'bg-amber-500 text-white hover:bg-amber-600'
-              : 'border border-amber-500 text-amber-600 hover:bg-amber-50'
+              ? 'bg-warning text-warning-foreground hover:bg-warning/90'
+              : 'border border-warning text-warning hover:bg-warning/10'
           }`}
           onClick={() => { setLowStock(!lowStock); setPage(0); }}
         >
-          <WarningIcon fontSize="small" />
+          <AlertTriangle className="h-4 w-4" />
           Low Stock
         </button>
       </Stack>
@@ -146,7 +144,7 @@ export default function InventoryListPage() {
                   </TableCell>
                   <TableCell align="right">
                     <span
-                      className={item.quantityOnHand <= item.reorderLevel ? 'font-bold text-red-600' : ''}
+                      className={item.quantityOnHand <= item.reorderLevel ? 'font-bold text-destructive' : ''}
                     >
                       {item.quantityOnHand}
                     </span>

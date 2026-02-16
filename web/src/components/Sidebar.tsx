@@ -84,6 +84,7 @@ export default function Sidebar() {
                   <li key={item.path}>
                     <button
                       onClick={() => router.push(item.path)}
+                      aria-current={active ? 'page' : undefined}
                       className={cn(
                         'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-150',
                         active

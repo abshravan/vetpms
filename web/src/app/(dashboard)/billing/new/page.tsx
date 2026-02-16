@@ -6,7 +6,6 @@ import {
   Paper,
   Grid,
   TextField,
-  IconButton,
   Alert,
   Divider,
   MenuItem,
@@ -17,8 +16,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowBack as BackIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import { Plus } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
@@ -111,9 +109,12 @@ export default function NewInvoicePage() {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <IconButton onClick={() => router.push('/billing')}>
-          <BackIcon />
-        </IconButton>
+        <button
+          onClick={() => router.push('/billing')}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">New Invoice</h1>
           <p className="mt-1 text-sm text-muted-foreground">Create a new invoice for a client</p>
@@ -248,9 +249,13 @@ export default function NewInvoicePage() {
                     </TableCell>
                     <TableCell>
                       {items.length > 1 && (
-                        <IconButton size="small" color="error" onClick={() => removeItem(i)}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
+                        <button
+                          type="button"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => removeItem(i)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
                       )}
                     </TableCell>
                   </TableRow>
@@ -288,7 +293,7 @@ export default function NewInvoicePage() {
                   sx={{ width: 100 }}
                   inputProps={{ step: 0.01, min: 0 }}
                 />
-                <span className="text-sm text-green-600">-{fmt(disc)}</span>
+                <span className="text-sm text-success">-{fmt(disc)}</span>
               </div>
               <Divider sx={{ my: 1 }} />
               <div className="flex items-center justify-between">
