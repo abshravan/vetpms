@@ -9,9 +9,6 @@ import {
   Grid,
   Button,
   Chip,
-  IconButton,
-  CircularProgress,
-  Alert,
   Divider,
   Dialog,
   DialogTitle,
@@ -19,7 +16,7 @@ import {
   DialogActions,
   TextField,
 } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { appointmentsApi } from '../../../../api/appointments';
 import {
   Appointment,
@@ -100,14 +97,18 @@ export default function AppointmentDetailPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (error || !appointment) {
-    return <Alert severity="error">{error || 'Appointment not found'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Appointment not found'}</p>
+      </div>
+    );
   }
 
   const nextStatuses = APPOINTMENT_TRANSITIONS[appointment.status];
@@ -124,20 +125,20 @@ export default function AppointmentDetailPage() {
     });
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.push('/appointments')}>
-          <BackIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.push('/appointments')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight flex-grow">
           Appointment — {appointment.patient?.name || 'Unknown'}
-        </Typography>
+        </h1>
         <Chip
           label={APPOINTMENT_STATUS_LABELS[appointment.status]}
           color={APPOINTMENT_STATUS_COLORS[appointment.status]}
         />
-      </Box>
+      </div>
 
       {/* Status actions */}
       {nextStatuses.length > 0 && (
@@ -168,9 +169,9 @@ export default function AppointmentDetailPage() {
 
       {/* Details */}
       <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <h2 className="text-sm font-semibold text-muted-foreground mb-1">
           Appointment Details
-        </Typography>
+        </h2>
         <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
@@ -218,9 +219,9 @@ export default function AppointmentDetailPage() {
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
           <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-1">
               Patient
-            </Typography>
+            </h2>
             <Divider sx={{ mb: 1 }} />
             {appointment.patient ? (
               <>
@@ -244,9 +245,9 @@ export default function AppointmentDetailPage() {
         </Grid>
         <Grid item xs={12} sm={6}>
           <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <h2 className="text-sm font-semibold text-muted-foreground mb-1">
               Owner
-            </Typography>
+            </h2>
             <Divider sx={{ mb: 1 }} />
             {appointment.client ? (
               <>
@@ -290,6 +291,6 @@ export default function AppointmentDetailPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 }

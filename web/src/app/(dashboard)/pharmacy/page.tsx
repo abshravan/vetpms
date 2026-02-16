@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Typography,
-  Box,
   Paper,
   Table,
   TableBody,
@@ -13,14 +11,13 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Button,
   Chip,
   TablePagination,
   MenuItem,
   Stack,
   Alert,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Plus } from 'lucide-react';
 import WarningIcon from '@mui/icons-material/Warning';
 import { inventoryApi } from '../../../api/inventory';
 import {
@@ -59,17 +56,20 @@ export default function InventoryListPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h6">Pharmacy & Inventory</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Pharmacy</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage medication inventory and stock levels</p>
+        </div>
+        <button
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
           onClick={() => router.push('/pharmacy/new')}
         >
+          <Plus className="h-4 w-4" />
           Add Item
-        </Button>
-      </Box>
+        </button>
+      </div>
 
       <Stack direction="row" spacing={2} mb={2} flexWrap="wrap" alignItems="center">
         <TextField
@@ -92,99 +92,101 @@ export default function InventoryListPage() {
             <MenuItem key={o.value} value={o.value}>{o.label}</MenuItem>
           ))}
         </TextField>
-        <Button
-          variant={lowStock ? 'contained' : 'outlined'}
-          color="warning"
-          size="small"
-          startIcon={<WarningIcon />}
+        <button
+          className={`inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium shadow-sm transition-all active:scale-[0.98] ${
+            lowStock
+              ? 'bg-amber-500 text-white hover:bg-amber-600'
+              : 'border border-amber-500 text-amber-600 hover:bg-amber-50'
+          }`}
           onClick={() => { setLowStock(!lowStock); setPage(0); }}
         >
+          <WarningIcon fontSize="small" />
           Low Stock
-        </Button>
+        </button>
       </Stack>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>SKU</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Category</TableCell>
-              <TableCell align="right">In Stock</TableCell>
-              <TableCell align="right">Reorder At</TableCell>
-              <TableCell>Unit</TableCell>
-              <TableCell align="right">Cost</TableCell>
-              <TableCell align="right">Price</TableCell>
-              <TableCell>Status</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {items?.data.map((item) => (
-              <TableRow
-                key={item.id}
-                hover
-                sx={{ cursor: 'pointer' }}
-                onClick={() => router.push(`/pharmacy/${item.id}`)}
-              >
-                <TableCell sx={{ fontFamily: 'monospace', fontSize: 13 }}>{item.sku}</TableCell>
-                <TableCell>
-                  {item.name}
-                  {item.requiresPrescription && (
-                    <Chip label="Rx" size="small" color="info" sx={{ ml: 1 }} />
-                  )}
-                  {item.isControlledSubstance && (
-                    <Chip label="CII" size="small" color="error" sx={{ ml: 0.5 }} />
-                  )}
-                </TableCell>
-                <TableCell>
-                  {ITEM_CATEGORY_OPTIONS.find((o) => o.value === item.category)?.label || item.category}
-                </TableCell>
-                <TableCell align="right">
-                  <Typography
-                    component="span"
-                    color={item.quantityOnHand <= item.reorderLevel ? 'error' : 'inherit'}
-                    fontWeight={item.quantityOnHand <= item.reorderLevel ? 700 : 400}
-                  >
-                    {item.quantityOnHand}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">{item.reorderLevel}</TableCell>
-                <TableCell>{item.unit}</TableCell>
-                <TableCell align="right">{fmt(item.costPrice)}</TableCell>
-                <TableCell align="right">{fmt(item.sellingPrice)}</TableCell>
-                <TableCell>
-                  {item.quantityOnHand <= item.reorderLevel ? (
-                    <Chip label="Low Stock" size="small" color="warning" />
-                  ) : item.expirationDate && new Date(item.expirationDate) <= new Date() ? (
-                    <Chip label="Expired" size="small" color="error" />
-                  ) : (
-                    <Chip label="OK" size="small" color="success" />
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-            {items?.data.length === 0 && (
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                  <Typography color="text.secondary">No inventory items found.</Typography>
-                </TableCell>
+                <TableCell>SKU</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell align="right">In Stock</TableCell>
+                <TableCell align="right">Reorder At</TableCell>
+                <TableCell>Unit</TableCell>
+                <TableCell align="right">Cost</TableCell>
+                <TableCell align="right">Price</TableCell>
+                <TableCell>Status</TableCell>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        {items && (
-          <TablePagination
-            component="div"
-            count={items.total}
-            page={page}
-            onPageChange={(_, p) => setPage(p)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
-          />
-        )}
-      </TableContainer>
-    </Box>
+            </TableHead>
+            <TableBody>
+              {items?.data.map((item) => (
+                <TableRow
+                  key={item.id}
+                  hover
+                  sx={{ cursor: 'pointer' }}
+                  onClick={() => router.push(`/pharmacy/${item.id}`)}
+                >
+                  <TableCell sx={{ fontFamily: 'monospace', fontSize: 13 }}>{item.sku}</TableCell>
+                  <TableCell>
+                    {item.name}
+                    {item.requiresPrescription && (
+                      <Chip label="Rx" size="small" color="info" sx={{ ml: 1 }} />
+                    )}
+                    {item.isControlledSubstance && (
+                      <Chip label="CII" size="small" color="error" sx={{ ml: 0.5 }} />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {ITEM_CATEGORY_OPTIONS.find((o) => o.value === item.category)?.label || item.category}
+                  </TableCell>
+                  <TableCell align="right">
+                    <span
+                      className={item.quantityOnHand <= item.reorderLevel ? 'font-bold text-red-600' : ''}
+                    >
+                      {item.quantityOnHand}
+                    </span>
+                  </TableCell>
+                  <TableCell align="right">{item.reorderLevel}</TableCell>
+                  <TableCell>{item.unit}</TableCell>
+                  <TableCell align="right">{fmt(item.costPrice)}</TableCell>
+                  <TableCell align="right">{fmt(item.sellingPrice)}</TableCell>
+                  <TableCell>
+                    {item.quantityOnHand <= item.reorderLevel ? (
+                      <Chip label="Low Stock" size="small" color="warning" />
+                    ) : item.expirationDate && new Date(item.expirationDate) <= new Date() ? (
+                      <Chip label="Expired" size="small" color="error" />
+                    ) : (
+                      <Chip label="OK" size="small" color="success" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {items?.data.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                    <span className="text-muted-foreground">No inventory items found.</span>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          {items && (
+            <TablePagination
+              component="div"
+              count={items.total}
+              page={page}
+              onPageChange={(_, p) => setPage(p)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+            />
+          )}
+        </TableContainer>
+      </div>
+    </div>
   );
 }

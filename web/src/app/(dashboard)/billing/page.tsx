@@ -3,13 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
-  Typography,
   Paper,
-  Button,
   Chip,
   TextField,
-  CircularProgress,
   Alert,
   Table,
   TableBody,
@@ -19,7 +15,7 @@ import {
   TableRow,
   TablePagination,
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Plus, Loader2 } from 'lucide-react';
 import { billingApi } from '../../../api/billing';
 import {
   Invoice,
@@ -60,17 +56,20 @@ export default function InvoicesPage() {
   const fmt = (n: number | string) => `$${Number(n).toFixed(2)}`;
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Invoices</Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Billing</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Track invoices and manage payments</p>
+        </div>
+        <button
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
           onClick={() => router.push('/billing/new')}
         >
+          <Plus className="h-4 w-4" />
           New Invoice
-        </Button>
-      </Box>
+        </button>
+      </div>
 
       <TextField
         placeholder="Search by invoice # or client name..."
@@ -84,9 +83,12 @@ export default function InvoicesPage() {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress /></Box>
+        <div className="flex items-center justify-center gap-2 text-muted-foreground py-8">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="text-sm">Loading...</span>
+        </div>
       ) : (
-        <Paper variant="outlined">
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -110,7 +112,7 @@ export default function InvoicesPage() {
                     onClick={() => router.push(`/billing/${inv.id}`)}
                   >
                     <TableCell>
-                      <Typography variant="body2" fontWeight={600}>{inv.invoiceNumber}</Typography>
+                      <span className="text-sm font-semibold">{inv.invoiceNumber}</span>
                     </TableCell>
                     <TableCell>
                       {inv.client ? `${inv.client.lastName}, ${inv.client.firstName}` : '—'}
@@ -120,13 +122,11 @@ export default function InvoicesPage() {
                     <TableCell align="right">{fmt(inv.totalAmount)}</TableCell>
                     <TableCell align="right">{fmt(inv.amountPaid)}</TableCell>
                     <TableCell align="right">
-                      <Typography
-                        variant="body2"
-                        fontWeight={Number(inv.balanceDue) > 0 ? 600 : 400}
-                        color={Number(inv.balanceDue) > 0 ? 'error.main' : 'text.primary'}
+                      <span
+                        className={`text-sm ${Number(inv.balanceDue) > 0 ? 'font-semibold text-red-600' : ''}`}
                       >
                         {fmt(inv.balanceDue)}
-                      </Typography>
+                      </span>
                     </TableCell>
                     <TableCell>
                       <Chip
@@ -140,7 +140,7 @@ export default function InvoicesPage() {
                 {result?.data.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                      <Typography variant="body2" color="text.secondary">No invoices found.</Typography>
+                      <span className="text-sm text-muted-foreground">No invoices found.</span>
                     </TableCell>
                   </TableRow>
                 )}
@@ -158,8 +158,8 @@ export default function InvoicesPage() {
               rowsPerPageOptions={[10, 20, 50]}
             />
           )}
-        </Paper>
+        </div>
       )}
-    </Box>
+    </div>
   );
 }

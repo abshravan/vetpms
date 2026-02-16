@@ -9,11 +9,9 @@ import {
   TextField,
   Button,
   Grid,
-  Alert,
   MenuItem,
-  IconButton,
 } from '@mui/material';
-import { ArrowBack as BackIcon } from '@mui/icons-material';
+import { ArrowLeft } from 'lucide-react';
 import { visitsApi } from '../../../../api/visits';
 import { patientsApi } from '../../../../api/patients';
 import { usersApi, UserSummary } from '../../../../api/users';
@@ -67,18 +65,22 @@ export default function NewVisitPage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.back()}>
-          <BackIcon />
-        </IconButton>
-        <Typography variant="h6">
+    <div>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.back()} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight">
           New Visit {patient ? `— ${patient.name}` : ''}
-        </Typography>
-      </Box>
+        </h1>
+      </div>
 
       <Paper variant="outlined" sx={{ p: 3, maxWidth: 500 }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6 mb-2">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        )}
 
         {patient && (
           <Box sx={{ mb: 2 }}>
@@ -126,6 +128,6 @@ export default function NewVisitPage() {
           </Grid>
         </form>
       </Paper>
-    </Box>
+    </div>
   );
 }

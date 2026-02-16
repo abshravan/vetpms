@@ -3,10 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Box,
-  Typography,
-  Button,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -15,19 +11,13 @@ import {
   TableRow,
   Paper,
   Chip,
-  IconButton,
   TablePagination,
-  InputAdornment,
 } from '@mui/material';
-import {
-  Add as AddIcon,
-  Search as SearchIcon,
-  Visibility as ViewIcon,
-  Pets as PetsIcon,
-} from '@mui/icons-material';
+import { Plus, Search, Eye, Users, PawPrint, Loader2 } from 'lucide-react';
 import { clientsApi } from '../../../api/clients';
 import { Client, PaginatedResult } from '../../../types';
 import ClientFormDialog from '../../../components/clients/ClientFormDialog';
+import { cn } from '../../../lib/utils';
 
 export default function ClientsListPage() {
   const router = useRouter();
@@ -58,7 +48,6 @@ export default function ClientsListPage() {
     fetchClients();
   }, [fetchClients]);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(0);
@@ -73,119 +62,134 @@ export default function ClientsListPage() {
   };
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6">Clients</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)}>
+    <div>
+      {/* Page header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Manage client accounts and contact information</p>
+        </div>
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" />
           New Client
-        </Button>
-      </Box>
+        </button>
+      </div>
 
-      <TextField
-        placeholder="Search by name, email, or phone..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        fullWidth
-        sx={{ mb: 2 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon fontSize="small" />
-            </InputAdornment>
-          ),
-        }}
-      />
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          placeholder="Search by name, email, or phone..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+        />
+      </div>
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell align="center">Patients</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading && !result ? (
+      {/* Table */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <TableContainer>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={7} align="center">Loading...</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>City</TableCell>
+                <TableCell align="center">Patients</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            ) : result && result.data.length > 0 ? (
-              result.data.map((client) => (
-                <TableRow
-                  key={client.id}
-                  hover
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => router.push(`/clients/${client.id}`)}
-                >
-                  <TableCell sx={{ fontWeight: 500 }}>
-                    {client.lastName}, {client.firstName}
-                  </TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.city || '—'}</TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      icon={<PetsIcon />}
-                      label={client.patients?.length ?? 0}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={client.isActive ? 'Active' : 'Inactive'}
-                      size="small"
-                      color={client.isActive ? 'success' : 'default'}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/clients/${client.id}`);
-                      }}
-                    >
-                      <ViewIcon fontSize="small" />
-                    </IconButton>
+            </TableHead>
+            <TableBody>
+              {loading && !result ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm">Loading clients...</span>
+                    </div>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center">
-                  {search ? 'No clients match your search' : 'No clients yet. Create your first client.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        {result && (
-          <TablePagination
-            component="div"
-            count={result.total}
-            page={page}
-            onPageChange={(_, newPage) => setPage(newPage)}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={(e) => {
-              setRowsPerPage(parseInt(e.target.value, 10));
-              setPage(0);
-            }}
-            rowsPerPageOptions={[10, 20, 50]}
-          />
-        )}
-      </TableContainer>
+              ) : result && result.data.length > 0 ? (
+                result.data.map((client) => (
+                  <TableRow
+                    key={client.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => router.push(`/clients/${client.id}`)}
+                  >
+                    <TableCell sx={{ fontWeight: 500 }}>
+                      {client.lastName}, {client.firstName}
+                    </TableCell>
+                    <TableCell>{client.email}</TableCell>
+                    <TableCell>{client.phone}</TableCell>
+                    <TableCell>{client.city || '—'}</TableCell>
+                    <TableCell align="center">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        <PawPrint className="h-3 w-3" />
+                        {client.patients?.length ?? 0}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={client.isActive ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={client.isActive ? 'success' : 'default'}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <button
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/clients/${client.id}`);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <div className="flex flex-col items-center gap-2">
+                      <Users className="h-8 w-8 text-muted-foreground/40" />
+                      <p className="text-sm text-muted-foreground">
+                        {search ? 'No clients match your search' : 'No clients yet. Create your first client.'}
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          {result && (
+            <TablePagination
+              component="div"
+              count={result.total}
+              page={page}
+              onPageChange={(_, newPage) => setPage(newPage)}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
+              rowsPerPageOptions={[10, 20, 50]}
+            />
+          )}
+        </TableContainer>
+      </div>
 
       <ClientFormDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onSubmit={handleCreate}
       />
-    </Box>
+    </div>
   );
 }

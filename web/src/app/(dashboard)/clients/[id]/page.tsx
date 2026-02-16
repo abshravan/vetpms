@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import {
   Box,
-  Typography,
   Paper,
   Grid,
   Button,
@@ -12,17 +11,15 @@ import {
   Card,
   CardContent,
   CardActionArea,
-  IconButton,
-  CircularProgress,
-  Alert,
   Divider,
+  Typography,
 } from '@mui/material';
 import {
-  ArrowBack as BackIcon,
   Edit as EditIcon,
   Add as AddIcon,
   Pets as PetsIcon,
 } from '@mui/icons-material';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
 import { Client, CreateClientData, CreatePatientData } from '../../../../types';
@@ -68,14 +65,18 @@ export default function ClientDetailPage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (error || !client) {
-    return <Alert severity="error">{error || 'Client not found'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Client not found'}</p>
+      </div>
+    );
   }
 
   const formatAge = (dob: string | null) => {
@@ -100,15 +101,15 @@ export default function ClientDetailPage() {
   };
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.push('/clients')}>
-          <BackIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.push('/clients')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <h1 className="text-2xl font-bold tracking-tight flex-grow">
           {client.lastName}, {client.firstName}
-        </Typography>
+        </h1>
         <Chip
           label={client.isActive ? 'Active' : 'Inactive'}
           size="small"
@@ -117,7 +118,7 @@ export default function ClientDetailPage() {
         <Button startIcon={<EditIcon />} onClick={() => setEditDialogOpen(true)}>
           Edit
         </Button>
-      </Box>
+      </div>
 
       {/* Client Info */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
@@ -238,6 +239,6 @@ export default function ClientDetailPage() {
         onSubmit={handleAddPatient}
         clientId={client.id}
       />
-    </Box>
+    </div>
   );
 }

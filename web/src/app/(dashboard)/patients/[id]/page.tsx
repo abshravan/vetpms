@@ -9,8 +9,6 @@ import {
   Grid,
   Button,
   Chip,
-  IconButton,
-  CircularProgress,
   Alert,
   Divider,
   Table,
@@ -21,11 +19,11 @@ import {
   TableRow,
 } from '@mui/material';
 import {
-  ArrowBack as BackIcon,
   Edit as EditIcon,
   Pets as PetsIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { patientsApi } from '../../../../api/patients';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
@@ -94,14 +92,18 @@ export default function PatientProfilePage() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (error || !patient) {
-    return <Alert severity="error">{error || 'Patient not found'}</Alert>;
+    return (
+      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <p className="text-sm text-destructive">{error || 'Patient not found'}</p>
+      </div>
+    );
   }
 
   const formatAge = (dob: string | null) => {
@@ -127,22 +129,22 @@ export default function PatientProfilePage() {
   const careTypeLabel = (t: string) => PREVENTIVE_CARE_TYPE_OPTIONS.find((o) => o.value === t)?.label || t;
 
   return (
-    <Box>
+    <div>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <IconButton onClick={() => router.push(patient.client ? `/clients/${patient.clientId}` : '/patients')}>
-          <BackIcon />
-        </IconButton>
+      <div className="flex items-center gap-1 mb-2">
+        <button onClick={() => router.push(patient.client ? `/clients/${patient.clientId}` : '/patients')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <PetsIcon color="primary" />
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <h1 className="text-2xl font-bold tracking-tight flex-grow">
           {patient.name}
-        </Typography>
+        </h1>
         {patient.isDeceased && <Chip label="Deceased" size="small" />}
         {!patient.isActive && <Chip label="Inactive" size="small" color="default" />}
         <Button startIcon={<EditIcon />} onClick={() => setEditDialogOpen(true)}>
           Edit
         </Button>
-      </Box>
+      </div>
 
       {/* Allergy alert */}
       {patient.allergies && (
@@ -153,9 +155,9 @@ export default function PatientProfilePage() {
 
       {/* Basic Info */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <h2 className="text-sm font-semibold text-muted-foreground mb-1">
           Patient Information
-        </Typography>
+        </h2>
         <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
@@ -200,9 +202,9 @@ export default function PatientProfilePage() {
       {/* Insurance */}
       {(patient.insuranceProvider || patient.insurancePolicyNumber) && (
         <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-1">
             Insurance
-          </Typography>
+          </h2>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={6}>
@@ -220,9 +222,9 @@ export default function PatientProfilePage() {
       {/* Owner Info */}
       {patient.client && (
         <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-1">
             Owner
-          </Typography>
+          </h2>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={6} sm={4}>
@@ -250,9 +252,9 @@ export default function PatientProfilePage() {
       {/* Notes */}
       {patient.notes && (
         <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-1">
             Notes
-          </Typography>
+          </h2>
           <Divider sx={{ mb: 2 }} />
           <Typography variant="body2">{patient.notes}</Typography>
         </Paper>
@@ -260,9 +262,9 @@ export default function PatientProfilePage() {
 
       {/* Vaccination History */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <h2 className="text-sm font-semibold text-muted-foreground mb-1">
           Vaccination History ({vaccinations.length})
-        </Typography>
+        </h2>
         <Divider sx={{ mb: 2 }} />
         {vaccinations.length > 0 ? (
           <TableContainer>
@@ -312,9 +314,9 @@ export default function PatientProfilePage() {
 
       {/* Preventive Care Plans */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+        <h2 className="text-sm font-semibold text-muted-foreground mb-1">
           Preventive Care ({preventiveCare.length})
-        </Typography>
+        </h2>
         <Divider sx={{ mb: 2 }} />
         {preventiveCare.length > 0 ? (
           <TableContainer>
@@ -371,9 +373,9 @@ export default function PatientProfilePage() {
       {/* Billing History */}
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-1">
             Invoices ({invoices.length})
-          </Typography>
+          </h2>
           <Button
             size="small"
             variant="outlined"
@@ -486,6 +488,6 @@ export default function PatientProfilePage() {
         clientId={patient.clientId}
         patient={patient}
       />
-    </Box>
+    </div>
   );
 }
