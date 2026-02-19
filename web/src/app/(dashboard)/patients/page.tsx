@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
   TextField,
   Table,
@@ -67,21 +68,31 @@ export default function PatientsListPage() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Patients</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Browse and manage patient records</p>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
+      {/* Page header */}
+      <div className="mb-8">
+        <div className="mb-1 flex items-center gap-2">
+          <PawPrint className="h-5 w-5 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Patient Records</span>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">Patients</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Browse and manage patient records</p>
       </div>
 
-      <div className="flex gap-4 mb-4">
+      {/* Filters */}
+      <div className="mb-5 flex gap-3">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Search by name, owner, or microchip..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="flex h-11 w-full rounded-xl border border-input bg-background pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-sm"
           />
         </div>
         <TextField
@@ -98,7 +109,8 @@ export default function PatientsListPage() {
         </TextField>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
         <TableContainer>
           <Table>
             <TableHead>
@@ -115,9 +127,9 @@ export default function PatientsListPage() {
             <TableBody>
               {loading && !result ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       <span className="text-sm">Loading patients...</span>
                     </div>
                   </TableCell>
@@ -131,8 +143,10 @@ export default function PatientsListPage() {
                     onClick={() => router.push(`/patients/${patient.id}`)}
                   >
                     <TableCell>
-                      <div className="flex items-center gap-1">
-                        <PawPrint className="h-4 w-4 text-primary" />
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                          <PawPrint className="h-3.5 w-3.5 text-primary" />
+                        </div>
                         <span className="text-sm font-medium">{patient.name}</span>
                       </div>
                     </TableCell>
@@ -162,11 +176,14 @@ export default function PatientsListPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
                     <div className="flex flex-col items-center gap-2">
-                      <PawPrint className="h-8 w-8 text-muted-foreground/40" />
-                      <p className="text-sm text-muted-foreground">
-                        {search || speciesFilter ? 'No patients match your filters' : 'No patients registered yet.'}
+                      <PawPrint className="h-10 w-10 text-muted-foreground/20" />
+                      <p className="text-sm font-medium text-muted-foreground/60">
+                        {search || speciesFilter ? 'No patients match your filters' : 'No patients registered yet'}
+                      </p>
+                      <p className="text-xs text-muted-foreground/40">
+                        {search || speciesFilter ? 'Try adjusting your search criteria' : 'Add a patient from a client profile'}
                       </p>
                     </div>
                   </TableCell>
@@ -190,6 +207,6 @@ export default function PatientsListPage() {
           )}
         </TableContainer>
       </div>
-    </div>
+    </motion.div>
   );
 }

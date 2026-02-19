@@ -2,15 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Button,
   Chip,
   IconButton,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -24,7 +19,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Trash2, Receipt } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import {
   Invoice,
@@ -101,14 +96,16 @@ export default function InvoiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </div>
     );
   }
   if (error || !invoice) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+      <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
         <p className="text-sm text-destructive">{error || 'Invoice not found'}</p>
       </div>
     );
@@ -118,94 +115,110 @@ export default function InvoiceDetailPage() {
   const canPay = invoice.status !== 'paid' && invoice.status !== 'cancelled' && invoice.status !== 'refunded';
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-1 mb-2">
-        <button onClick={() => router.push('/billing')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <button
+          onClick={() => router.push('/billing')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+        >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold tracking-tight flex-grow">
-          Invoice {invoice.invoiceNumber}
-        </h1>
+        <div className="flex-grow">
+          <div className="mb-0.5 flex items-center gap-2">
+            <Receipt className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">INVOICE</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {invoice.invoiceNumber}
+          </h1>
+        </div>
         <Chip
           label={INVOICE_STATUS_LABELS[invoice.status]}
           color={INVOICE_STATUS_COLORS[invoice.status]}
         />
         {invoice.status === 'draft' && (
-          <Button variant="outlined" onClick={() => handleStatusChange('sent')}>
+          <button
+            onClick={() => handleStatusChange('sent')}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          >
             Mark as Sent
-          </Button>
+          </button>
         )}
         {canPay && (
-          <Button
-            variant="contained"
-            color="success"
+          <button
             onClick={() => { setPayAmount(String(invoice.balanceDue)); setPayDialogOpen(true); }}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
           >
             Record Payment
-          </Button>
+          </button>
         )}
         {canEdit && (
-          <Button variant="outlined" color="error" onClick={() => handleStatusChange('cancelled')}>
+          <button
+            onClick={() => handleStatusChange('cancelled')}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 hover:shadow-sm"
+          >
             Cancel
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Invoice info */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Client</Typography>
-            <Typography
-              variant="body2"
-              sx={{ cursor: 'pointer', color: 'primary.main' }}
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Client</span>
+            <p
+              className="cursor-pointer text-sm text-primary hover:underline"
               onClick={() => router.push(`/clients/${invoice.clientId}`)}
             >
               {invoice.client ? `${invoice.client.lastName}, ${invoice.client.firstName}` : '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Patient</Typography>
-            <Typography
-              variant="body2"
-              sx={invoice.patientId ? { cursor: 'pointer', color: 'primary.main' } : {}}
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Patient</span>
+            <p
+              className={invoice.patientId ? 'cursor-pointer text-sm text-primary hover:underline' : 'text-sm'}
               onClick={() => invoice.patientId && router.push(`/patients/${invoice.patientId}`)}
             >
               {invoice.patient?.name || '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={2}>
-            <Typography variant="caption" color="text.secondary">Issue Date</Typography>
-            <Typography variant="body2">{new Date(invoice.issueDate).toLocaleDateString()}</Typography>
-          </Grid>
-          <Grid item xs={6} sm={2}>
-            <Typography variant="caption" color="text.secondary">Due Date</Typography>
-            <Typography variant="body2">
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Issue Date</span>
+            <p className="text-sm">{new Date(invoice.issueDate).toLocaleDateString()}</p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Due Date</span>
+            <p className="text-sm">
               {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={2}>
-            <Typography variant="caption" color="text.secondary">Payment</Typography>
-            <Typography variant="body2">
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Payment</span>
+            <p className="text-sm">
               {invoice.paymentMethod
                 ? PAYMENT_METHOD_OPTIONS.find((o) => o.value === invoice.paymentMethod)?.label
                 : '—'}
-            </Typography>
-          </Grid>
+            </p>
+          </div>
           {invoice.notes && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="text.secondary">Notes</Typography>
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{invoice.notes}</Typography>
-            </Grid>
+            <div className="col-span-2 sm:col-span-5">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Notes</span>
+              <p className="whitespace-pre-wrap text-sm">{invoice.notes}</p>
+            </div>
           )}
-        </Grid>
-      </Paper>
+        </div>
+      </div>
 
       {/* Line Items */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Line Items</h2>
-        <Divider sx={{ mb: 2 }} />
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Line Items</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -222,8 +235,8 @@ export default function InvoiceDetailPage() {
               {invoice.items.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>
-                    <Typography variant="body2">{item.description}</Typography>
-                    {item.notes && <Typography variant="caption" color="text.secondary">{item.notes}</Typography>}
+                    <span className="text-sm">{item.description}</span>
+                    {item.notes && <span className="block text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{item.notes}</span>}
                   </TableCell>
                   <TableCell>{item.category || '—'}</TableCell>
                   <TableCell align="right">{item.quantity}</TableCell>
@@ -243,50 +256,50 @@ export default function InvoiceDetailPage() {
         </TableContainer>
 
         {/* Totals */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          <Box sx={{ width: 280 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2">Subtotal</Typography>
-              <Typography variant="body2">{fmt(invoice.subtotal)}</Typography>
-            </Box>
+        <div className="mt-4 flex justify-end">
+          <div className="w-[280px]">
+            <div className="mb-1 flex justify-between">
+              <span className="text-sm">Subtotal</span>
+              <span className="text-sm">{fmt(invoice.subtotal)}</span>
+            </div>
             {Number(invoice.taxRate) > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body2">Tax ({invoice.taxRate}%)</Typography>
-                <Typography variant="body2">{fmt(invoice.taxAmount)}</Typography>
-              </Box>
+              <div className="mb-1 flex justify-between">
+                <span className="text-sm">Tax ({invoice.taxRate}%)</span>
+                <span className="text-sm">{fmt(invoice.taxAmount)}</span>
+              </div>
             )}
             {Number(invoice.discountAmount) > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body2" color="success.main">Discount</Typography>
-                <Typography variant="body2" color="success.main">-{fmt(invoice.discountAmount)}</Typography>
-              </Box>
+              <div className="mb-1 flex justify-between">
+                <span className="text-sm text-emerald-600">Discount</span>
+                <span className="text-sm text-emerald-600">-{fmt(invoice.discountAmount)}</span>
+              </div>
             )}
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2" fontWeight={600}>Total</Typography>
-              <Typography variant="body2" fontWeight={600}>{fmt(invoice.totalAmount)}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-              <Typography variant="body2">Amount Paid</Typography>
-              <Typography variant="body2">{fmt(invoice.amountPaid)}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="body2" fontWeight={700} color={Number(invoice.balanceDue) > 0 ? 'error.main' : 'success.main'}>
+            <div className="my-2 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div className="mb-1 flex justify-between">
+              <span className="text-sm font-semibold">Total</span>
+              <span className="text-sm font-semibold">{fmt(invoice.totalAmount)}</span>
+            </div>
+            <div className="mb-1 flex justify-between">
+              <span className="text-sm">Amount Paid</span>
+              <span className="text-sm">{fmt(invoice.amountPaid)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className={`text-sm font-bold ${Number(invoice.balanceDue) > 0 ? 'text-destructive' : 'text-emerald-600'}`}>
                 Balance Due
-              </Typography>
-              <Typography variant="body2" fontWeight={700} color={Number(invoice.balanceDue) > 0 ? 'error.main' : 'success.main'}>
+              </span>
+              <span className={`text-sm font-bold ${Number(invoice.balanceDue) > 0 ? 'text-destructive' : 'text-emerald-600'}`}>
                 {fmt(invoice.balanceDue)}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Paper>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Payment Dialog */}
       <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Record Payment</DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div className="flex flex-col gap-4 pt-2">
             <TextField
               label="Amount"
               type="number"
@@ -314,15 +327,24 @@ export default function InvoiceDetailPage() {
               multiline
               rows={2}
             />
-          </Box>
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPayDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="success" onClick={handlePayment} disabled={paying || !payAmount}>
+          <button
+            onClick={() => setPayDialogOpen(false)}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePayment}
+            disabled={paying || !payAmount}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
             {paying ? 'Processing...' : 'Record Payment'}
-          </Button>
+          </button>
         </DialogActions>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

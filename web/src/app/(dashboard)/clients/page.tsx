@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -16,6 +17,7 @@ import { Plus, Search, Eye, Users, PawPrint, Loader2 } from 'lucide-react';
 import { clientsApi } from '../../../api/clients';
 import { Client, PaginatedResult } from '../../../types';
 import ClientFormDialog from '../../../components/clients/ClientFormDialog';
+import { cn } from '../../../lib/utils';
 
 export default function ClientsListPage() {
   const router = useRouter();
@@ -60,16 +62,24 @@ export default function ClientsListPage() {
   };
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
       {/* Page header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-8 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Clients</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage client accounts and contact information</p>
+          <div className="mb-1 flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">Client Management</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">Clients</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">Manage client accounts and contact information</p>
         </div>
         <button
           onClick={() => setDialogOpen(true)}
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+          className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" />
           New Client
@@ -77,18 +87,18 @@ export default function ClientsListPage() {
       </div>
 
       {/* Search */}
-      <div className="relative mb-4">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative mb-5">
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           placeholder="Search by name, email, or phone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex h-10 w-full rounded-lg border border-input bg-background pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+          className="flex h-11 w-full rounded-xl border border-input bg-background pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:shadow-sm"
         />
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
         <TableContainer>
           <Table>
             <TableHead>
@@ -105,9 +115,9 @@ export default function ClientsListPage() {
             <TableBody>
               {loading && !result ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       <span className="text-sm">Loading clients...</span>
                     </div>
                   </TableCell>
@@ -127,7 +137,7 @@ export default function ClientsListPage() {
                     <TableCell>{client.phone}</TableCell>
                     <TableCell>{client.city || '—'}</TableCell>
                     <TableCell align="center">
-                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-muted/30 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                         <PawPrint className="h-3 w-3" />
                         {client.patients?.length ?? 0}
                       </span>
@@ -141,7 +151,7 @@ export default function ClientsListPage() {
                     </TableCell>
                     <TableCell align="right">
                       <button
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/clients/${client.id}`);
@@ -154,11 +164,14 @@ export default function ClientsListPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
+                  <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
                     <div className="flex flex-col items-center gap-2">
-                      <Users className="h-8 w-8 text-muted-foreground/40" />
-                      <p className="text-sm text-muted-foreground">
-                        {search ? 'No clients match your search' : 'No clients yet. Create your first client.'}
+                      <Users className="h-10 w-10 text-muted-foreground/20" />
+                      <p className="text-sm font-medium text-muted-foreground/60">
+                        {search ? 'No clients match your search' : 'No clients yet'}
+                      </p>
+                      <p className="text-xs text-muted-foreground/40">
+                        {search ? 'Try a different search term' : 'Create your first client to get started'}
                       </p>
                     </div>
                   </TableCell>
@@ -188,6 +201,6 @@ export default function ClientsListPage() {
         onClose={() => setDialogOpen(false)}
         onSubmit={handleCreate}
       />
-    </div>
+    </motion.div>
   );
 }

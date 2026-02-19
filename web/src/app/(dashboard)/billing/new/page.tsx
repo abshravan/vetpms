@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Paper,
-  Grid,
   TextField,
-  Alert,
-  Divider,
   MenuItem,
   Table,
   TableBody,
@@ -16,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, AlertTriangle, FileText } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
@@ -107,91 +104,96 @@ export default function NewInvoicePage() {
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
+      <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => router.push('/billing')}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">New Invoice</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Create a new invoice for a client</p>
+          <div className="mb-0.5 flex items-center gap-2">
+            <FileText className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">NEW INVOICE</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Create Invoice</h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">Create a new invoice for a client</p>
         </div>
       </div>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Client"
-                value={clientId}
-                onChange={(e) => { setClientId(e.target.value); setPatientId(''); }}
-                select
-                fullWidth
-                required
-              >
-                {clients.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>{c.lastName}, {c.firstName}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                label="Patient"
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                select
-                fullWidth
-                disabled={!clientId}
-              >
-                <MenuItem value="">— None —</MenuItem>
-                {patients.map((p) => (
-                  <MenuItem key={p.id} value={p.id}>{p.name} ({p.species})</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={6} sm={2}>
-              <TextField
-                label="Issue Date"
-                type="date"
-                value={issueDate}
-                onChange={(e) => setIssueDate(e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={6} sm={2}>
-              <TextField
-                label="Due Date"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-          </Grid>
-        </Paper>
+        <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <TextField
+              label="Client"
+              value={clientId}
+              onChange={(e) => { setClientId(e.target.value); setPatientId(''); }}
+              select
+              fullWidth
+              required
+            >
+              {clients.map((c) => (
+                <MenuItem key={c.id} value={c.id}>{c.lastName}, {c.firstName}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Patient"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              select
+              fullWidth
+              disabled={!clientId}
+            >
+              <MenuItem value="">— None —</MenuItem>
+              {patients.map((p) => (
+                <MenuItem key={p.id} value={p.id}>{p.name} ({p.species})</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Issue Date"
+              type="date"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="Due Date"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+            />
+          </div>
+        </div>
 
         {/* Line Items */}
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold">Line Items</span>
+        <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Line Items</h2>
             <button
               type="button"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98]"
+              className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
               onClick={addItem}
             >
               <Plus className="h-3.5 w-3.5" />
               Add Item
             </button>
           </div>
-          <Divider sx={{ mb: 2 }} />
+          <div className="mb-4 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -293,19 +295,19 @@ export default function NewInvoicePage() {
                   sx={{ width: 100 }}
                   inputProps={{ step: 0.01, min: 0 }}
                 />
-                <span className="text-sm text-success">-{fmt(disc)}</span>
+                <span className="text-sm text-emerald-600">-{fmt(disc)}</span>
               </div>
-              <Divider sx={{ my: 1 }} />
+              <div className="my-2 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
               <div className="flex items-center justify-between">
                 <span className="text-base font-bold">Total</span>
                 <span className="text-base font-bold">{fmt(total)}</span>
               </div>
             </div>
           </div>
-        </Paper>
+        </div>
 
         {/* Notes */}
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
           <TextField
             label="Notes"
             value={notes}
@@ -314,25 +316,25 @@ export default function NewInvoicePage() {
             multiline
             rows={2}
           />
-        </Paper>
+        </div>
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium shadow-sm transition-all hover:bg-accent active:scale-[0.98]"
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
             onClick={() => router.push('/billing')}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
             disabled={submitting}
           >
             {submitting ? 'Creating...' : 'Create Invoice'}
           </button>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 }

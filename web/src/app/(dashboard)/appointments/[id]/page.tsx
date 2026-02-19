@@ -2,21 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Button,
   Chip,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
 } from '@mui/material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Calendar } from 'lucide-react';
 import { appointmentsApi } from '../../../../api/appointments';
 import {
   Appointment,
@@ -97,15 +92,17 @@ export default function AppointmentDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </div>
     );
   }
 
   if (error || !appointment) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+      <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
         <p className="text-sm text-destructive">{error || 'Appointment not found'}</p>
       </div>
     );
@@ -125,15 +122,28 @@ export default function AppointmentDetailPage() {
     });
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-1 mb-2">
-        <button onClick={() => router.push('/appointments')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          onClick={() => router.push('/appointments')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+        >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold tracking-tight flex-grow">
-          Appointment — {appointment.patient?.name || 'Unknown'}
-        </h1>
+        <div className="flex-grow">
+          <div className="mb-0.5 flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">APPOINTMENT</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {appointment.patient?.name || 'Unknown'}
+          </h1>
+        </div>
         <Chip
           label={APPOINTMENT_STATUS_LABELS[appointment.status]}
           color={APPOINTMENT_STATUS_COLORS[appointment.status]}
@@ -142,133 +152,117 @@ export default function AppointmentDetailPage() {
 
       {/* Status actions */}
       {nextStatuses.length > 0 && (
-        <Paper variant="outlined" sx={{ p: 2, mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mr: 1, alignSelf: 'center' }}>
-            Actions:
-          </Typography>
-          {nextStatuses.map((status) => (
-            <Button
-              key={status}
-              variant={status === 'cancelled' || status === 'no_show' ? 'outlined' : 'contained'}
-              color={
-                status === 'cancelled' || status === 'no_show'
-                  ? 'error'
-                  : status === 'completed'
-                    ? 'success'
-                    : 'primary'
-              }
-              size="small"
-              disabled={transitioning}
-              onClick={() => handleTransition(status)}
-            >
-              {STATUS_BUTTON_LABELS[status] || status}
-            </Button>
-          ))}
-        </Paper>
+        <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Actions:</span>
+            {nextStatuses.map((status) => (
+              <button
+                key={status}
+                disabled={transitioning}
+                onClick={() => handleTransition(status)}
+                className={
+                  status === 'cancelled' || status === 'no_show'
+                    ? 'inline-flex h-9 items-center gap-2 rounded-xl border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 hover:shadow-sm disabled:opacity-50'
+                    : status === 'completed'
+                      ? 'inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50'
+                      : 'inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50'
+                }
+              >
+                {STATUS_BUTTON_LABELS[status] || status}
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Details */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold text-muted-foreground mb-1">
-          Appointment Details
-        </h2>
-        <Divider sx={{ mb: 2 }} />
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Start</Typography>
-            <Typography variant="body2">{formatDateTime(appointment.startTime)}</Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">End</Typography>
-            <Typography variant="body2">{formatDateTime(appointment.endTime)}</Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Type</Typography>
-            <Typography variant="body2">{typeLabel}</Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Vet</Typography>
-            <Typography variant="body2">
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Appointment Details</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Start</span>
+            <p className="text-sm">{formatDateTime(appointment.startTime)}</p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">End</span>
+            <p className="text-sm">{formatDateTime(appointment.endTime)}</p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Type</span>
+            <p className="text-sm">{typeLabel}</p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Vet</span>
+            <p className="text-sm">
               {appointment.vet ? `Dr. ${appointment.vet.lastName}, ${appointment.vet.firstName}` : '—'}
-            </Typography>
-          </Grid>
+            </p>
+          </div>
           {appointment.reason && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="text.secondary">Reason</Typography>
-              <Typography variant="body2">{appointment.reason}</Typography>
-            </Grid>
+            <div className="col-span-2 sm:col-span-4">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Reason</span>
+              <p className="text-sm">{appointment.reason}</p>
+            </div>
           )}
           {appointment.notes && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="text.secondary">Notes</Typography>
-              <Typography variant="body2">{appointment.notes}</Typography>
-            </Grid>
+            <div className="col-span-2 sm:col-span-4">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Notes</span>
+              <p className="text-sm">{appointment.notes}</p>
+            </div>
           )}
           {appointment.cancellationReason && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="error">Cancellation Reason</Typography>
-              <Typography variant="body2" color="error">
+            <div className="col-span-2 sm:col-span-4">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-destructive">Cancellation Reason</span>
+              <p className="text-sm text-destructive">
                 {appointment.cancellationReason}
-              </Typography>
-            </Grid>
+              </p>
+            </div>
           )}
-        </Grid>
-      </Paper>
+        </div>
+      </div>
 
       {/* Patient & Client */}
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <h2 className="text-sm font-semibold text-muted-foreground mb-1">
-              Patient
-            </h2>
-            <Divider sx={{ mb: 1 }} />
-            {appointment.patient ? (
-              <>
-                <Typography
-                  variant="body2"
-                  fontWeight={500}
-                  sx={{ cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => router.push(`/patients/${appointment.patientId}`)}
-                >
-                  {appointment.patient.name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-                  {appointment.patient.species}
-                  {appointment.patient.breed ? ` — ${appointment.patient.breed}` : ''}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant="body2">—</Typography>
-            )}
-          </Paper>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <h2 className="text-sm font-semibold text-muted-foreground mb-1">
-              Owner
-            </h2>
-            <Divider sx={{ mb: 1 }} />
-            {appointment.client ? (
-              <>
-                <Typography
-                  variant="body2"
-                  fontWeight={500}
-                  sx={{ cursor: 'pointer', color: 'primary.main', '&:hover': { textDecoration: 'underline' } }}
-                  onClick={() => router.push(`/clients/${appointment.clientId}`)}
-                >
-                  {appointment.client.lastName}, {appointment.client.firstName}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {appointment.client.phone}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant="body2">—</Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+          <h2 className="text-lg font-semibold">Patient</h2>
+          <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          {appointment.patient ? (
+            <>
+              <p
+                className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                onClick={() => router.push(`/patients/${appointment.patientId}`)}
+              >
+                {appointment.patient.name}
+              </p>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                {appointment.patient.species}
+                {appointment.patient.breed ? ` — ${appointment.patient.breed}` : ''}
+              </span>
+            </>
+          ) : (
+            <p className="text-sm">—</p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+          <h2 className="text-lg font-semibold">Owner</h2>
+          <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          {appointment.client ? (
+            <>
+              <p
+                className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                onClick={() => router.push(`/clients/${appointment.clientId}`)}
+              >
+                {appointment.client.lastName}, {appointment.client.firstName}
+              </p>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
+                {appointment.client.phone}
+              </span>
+            </>
+          ) : (
+            <p className="text-sm">—</p>
+          )}
+        </div>
+      </div>
 
       {/* Cancel dialog */}
       <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} maxWidth="xs" fullWidth>
@@ -285,12 +279,21 @@ export default function AppointmentDetailPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)}>Back</Button>
-          <Button variant="contained" color="error" onClick={handleCancel} disabled={transitioning}>
+          <button
+            onClick={() => setCancelDialogOpen(false)}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          >
+            Back
+          </button>
+          <button
+            onClick={handleCancel}
+            disabled={transitioning}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
             {transitioning ? 'Cancelling...' : 'Confirm Cancel'}
-          </Button>
+          </button>
         </DialogActions>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }
