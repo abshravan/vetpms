@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Paper,
-  Tabs,
-  Tab,
   Table,
   TableBody,
   TableCell,
@@ -12,11 +10,17 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Alert,
   Chip,
-  Stack,
 } from '@mui/material';
-import { Loader2 } from 'lucide-react';
+import {
+  BarChart3,
+  Loader2,
+  DollarSign,
+  ClipboardList,
+  Syringe,
+  Star,
+  AlertTriangle,
+} from 'lucide-react';
 import {
   reportsApi,
   RevenueReport,
@@ -24,6 +28,7 @@ import {
   VaccinationDueReport,
   TopServiceReport,
 } from '../../../api/reports';
+import { cn } from '../../../lib/utils';
 
 function startOfMonth(): string {
   const d = new Date();
@@ -35,6 +40,37 @@ function today(): string {
 
 const fmt = (n: number) =>
   `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function RunButton({ loading, onClick }: { loading: boolean; onClick: () => void }) {
+  return (
+    <button
+      className="inline-flex h-10 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-5 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+      {loading ? 'Loading...' : 'Run Report'}
+    </button>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+      <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+      <p className="text-sm text-destructive">{message}</p>
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-10">
+      <BarChart3 className="h-10 w-10 text-muted-foreground/20" />
+      <p className="text-sm text-muted-foreground/60">{message}</p>
+    </div>
+  );
+}
 
 // ───── Revenue Tab ─────
 function RevenueTab() {
@@ -57,7 +93,7 @@ function RevenueTab() {
 
   return (
     <div>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} alignItems="center" flexWrap="wrap">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <TextField label="Start" type="date" size="small" value={startDate} onChange={(e) => setStartDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="End" type="date" size="small" value={endDate} onChange={(e) => setEndDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="Group by" select size="small" value={groupBy} onChange={(e) => setGroupBy(e.target.value as 'day' | 'week' | 'month')} SelectProps={{ native: true }}>
@@ -65,22 +101,11 @@ function RevenueTab() {
           <option value="week">Week</option>
           <option value="month">Month</option>
         </TextField>
-        <button
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
-          onClick={load}
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading...
-            </span>
-          ) : 'Run Report'}
-        </button>
-      </Stack>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <RunButton loading={loading} onClick={load} />
+      </div>
+      {error && <ErrorBanner message={error} />}
       {data.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -96,19 +121,19 @@ function RevenueTab() {
                 {data.map((row) => (
                   <TableRow key={row.period}>
                     <TableCell>{row.period}</TableCell>
-                    <TableCell align="right">{fmt(row.totalInvoiced)}</TableCell>
-                    <TableCell align="right">{fmt(row.totalCollected)}</TableCell>
-                    <TableCell align="right">{fmt(row.outstanding)}</TableCell>
-                    <TableCell align="right">{row.invoiceCount}</TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(row.totalInvoiced)}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(row.totalCollected)}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(row.outstanding)}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{row.invoiceCount}</span></TableCell>
                   </TableRow>
                 ))}
                 {data.length > 1 && (
-                  <TableRow sx={{ fontWeight: 700, '& td': { fontWeight: 700 } }}>
+                  <TableRow sx={{ '& td': { fontWeight: 700 } }}>
                     <TableCell>Total</TableCell>
-                    <TableCell align="right">{fmt(data.reduce((s, r) => s + r.totalInvoiced, 0))}</TableCell>
-                    <TableCell align="right">{fmt(data.reduce((s, r) => s + r.totalCollected, 0))}</TableCell>
-                    <TableCell align="right">{fmt(data.reduce((s, r) => s + r.outstanding, 0))}</TableCell>
-                    <TableCell align="right">{data.reduce((s, r) => s + r.invoiceCount, 0)}</TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(data.reduce((s, r) => s + r.totalInvoiced, 0))}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(data.reduce((s, r) => s + r.totalCollected, 0))}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(data.reduce((s, r) => s + r.outstanding, 0))}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{data.reduce((s, r) => s + r.invoiceCount, 0)}</span></TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -117,9 +142,7 @@ function RevenueTab() {
         </div>
       )}
       {!loading && data.length === 0 && !error && (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Click &quot;Run Report&quot; to generate revenue data.
-        </p>
+        <EmptyState message="Click &quot;Run Report&quot; to generate revenue data." />
       )}
     </div>
   );
@@ -146,7 +169,7 @@ function VisitsTab() {
 
   return (
     <div>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} alignItems="center" flexWrap="wrap">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <TextField label="Start" type="date" size="small" value={startDate} onChange={(e) => setStartDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="End" type="date" size="small" value={endDate} onChange={(e) => setEndDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="Group by" select size="small" value={groupBy} onChange={(e) => setGroupBy(e.target.value as 'day' | 'week' | 'month')} SelectProps={{ native: true }}>
@@ -154,22 +177,11 @@ function VisitsTab() {
           <option value="week">Week</option>
           <option value="month">Month</option>
         </TextField>
-        <button
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
-          onClick={load}
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading...
-            </span>
-          ) : 'Run Report'}
-        </button>
-      </Stack>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <RunButton loading={loading} onClick={load} />
+      </div>
+      {error && <ErrorBanner message={error} />}
       {data.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -184,24 +196,26 @@ function VisitsTab() {
                 {data.map((row) => (
                   <TableRow key={row.period}>
                     <TableCell>{row.period}</TableCell>
-                    <TableCell align="right">{row.visitCount}</TableCell>
-                    <TableCell align="right">{row.completedCount}</TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{row.visitCount}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{row.completedCount}</span></TableCell>
                     <TableCell align="right">
-                      {row.visitCount > 0 ? Math.round((row.completedCount / row.visitCount) * 100) : 0}%
+                      <span className="tabular-nums">{row.visitCount > 0 ? Math.round((row.completedCount / row.visitCount) * 100) : 0}%</span>
                     </TableCell>
                   </TableRow>
                 ))}
                 {data.length > 1 && (
                   <TableRow sx={{ '& td': { fontWeight: 700 } }}>
                     <TableCell>Total</TableCell>
-                    <TableCell align="right">{data.reduce((s, r) => s + r.visitCount, 0)}</TableCell>
-                    <TableCell align="right">{data.reduce((s, r) => s + r.completedCount, 0)}</TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{data.reduce((s, r) => s + r.visitCount, 0)}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{data.reduce((s, r) => s + r.completedCount, 0)}</span></TableCell>
                     <TableCell align="right">
-                      {(() => {
-                        const tv = data.reduce((s, r) => s + r.visitCount, 0);
-                        const tc = data.reduce((s, r) => s + r.completedCount, 0);
-                        return tv > 0 ? Math.round((tc / tv) * 100) : 0;
-                      })()}%
+                      <span className="tabular-nums">
+                        {(() => {
+                          const tv = data.reduce((s, r) => s + r.visitCount, 0);
+                          const tc = data.reduce((s, r) => s + r.completedCount, 0);
+                          return tv > 0 ? Math.round((tc / tv) * 100) : 0;
+                        })()}%
+                      </span>
                     </TableCell>
                   </TableRow>
                 )}
@@ -211,9 +225,7 @@ function VisitsTab() {
         </div>
       )}
       {!loading && data.length === 0 && !error && (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Click &quot;Run Report&quot; to generate visit data.
-        </p>
+        <EmptyState message="Click &quot;Run Report&quot; to generate visit data." />
       )}
     </div>
   );
@@ -238,24 +250,13 @@ function VaccinationsTab() {
 
   return (
     <div>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} alignItems="center">
+      <div className="mb-4 flex items-center gap-3">
         <TextField label="Days ahead" type="number" size="small" value={days} onChange={(e) => setDays(Number(e.target.value))} sx={{ width: 120 }} />
-        <button
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
-          onClick={load}
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading...
-            </span>
-          ) : 'Run Report'}
-        </button>
-      </Stack>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <RunButton loading={loading} onClick={load} />
+      </div>
+      {error && <ErrorBanner message={error} />}
       {data.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -295,9 +296,7 @@ function VaccinationsTab() {
         </div>
       )}
       {!loading && data.length === 0 && !error && (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Click &quot;Run Report&quot; to see upcoming vaccinations.
-        </p>
+        <EmptyState message="Click &quot;Run Report&quot; to see upcoming vaccinations." />
       )}
     </div>
   );
@@ -324,26 +323,15 @@ function TopServicesTab() {
 
   return (
     <div>
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }} alignItems="center" flexWrap="wrap">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <TextField label="Start" type="date" size="small" value={startDate} onChange={(e) => setStartDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="End" type="date" size="small" value={endDate} onChange={(e) => setEndDate(e.target.value)} InputLabelProps={{ shrink: true }} />
         <TextField label="Limit" type="number" size="small" value={limit} onChange={(e) => setLimit(Number(e.target.value))} sx={{ width: 100 }} />
-        <button
-          className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50"
-          onClick={load}
-          disabled={loading}
-        >
-          {loading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading...
-            </span>
-          ) : 'Run Report'}
-        </button>
-      </Stack>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        <RunButton loading={loading} onClick={load} />
+      </div>
+      {error && <ErrorBanner message={error} />}
       {data.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
           <TableContainer>
             <Table size="small">
               <TableHead>
@@ -359,12 +347,14 @@ function TopServicesTab() {
               <TableBody>
                 {data.map((row, idx) => (
                   <TableRow key={row.description}>
-                    <TableCell>{idx + 1}</TableCell>
-                    <TableCell>{row.description}</TableCell>
+                    <TableCell>
+                      <span className="tabular-nums text-muted-foreground">{idx + 1}</span>
+                    </TableCell>
+                    <TableCell><span className="font-medium">{row.description}</span></TableCell>
                     <TableCell>{row.category || '—'}</TableCell>
-                    <TableCell align="right">{row.totalQuantity}</TableCell>
-                    <TableCell align="right">{fmt(row.totalRevenue)}</TableCell>
-                    <TableCell align="right">{row.invoiceCount}</TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{row.totalQuantity}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{fmt(row.totalRevenue)}</span></TableCell>
+                    <TableCell align="right"><span className="tabular-nums">{row.invoiceCount}</span></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -373,38 +363,66 @@ function TopServicesTab() {
         </div>
       )}
       {!loading && data.length === 0 && !error && (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Click &quot;Run Report&quot; to see top services.
-        </p>
+        <EmptyState message="Click &quot;Run Report&quot; to see top services." />
       )}
     </div>
   );
 }
+
+// ───── Tab config ─────
+const reportTabs = [
+  { label: 'Revenue', icon: DollarSign },
+  { label: 'Visits', icon: ClipboardList },
+  { label: 'Vaccinations Due', icon: Syringe },
+  { label: 'Top Services', icon: Star },
+];
 
 // ───── Main Reports Page ─────
 export default function ReportsPage() {
   const [tab, setTab] = useState(0);
 
   return (
-    <div>
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">Reports</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Analytics and practice insights</p>
-      </div>
-      <Paper variant="outlined">
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto">
-          <Tab label="Revenue" />
-          <Tab label="Visits" />
-          <Tab label="Vaccinations Due" />
-          <Tab label="Top Services" />
-        </Tabs>
-        <div className="p-4">
-          {tab === 0 && <RevenueTab />}
-          {tab === 1 && <VisitsTab />}
-          {tab === 2 && <VaccinationsTab />}
-          {tab === 3 && <TopServicesTab />}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
+      {/* Page header */}
+      <div className="mb-8">
+        <div className="mb-1 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Analytics</span>
         </div>
-      </Paper>
-    </div>
+        <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Analytics and practice insights</p>
+      </div>
+
+      {/* Custom tab navigation */}
+      <div className="mb-6 flex gap-1 rounded-xl border border-border/60 bg-muted/50 p-1">
+        {reportTabs.map((t, i) => (
+          <button
+            key={t.label}
+            onClick={() => setTab(i)}
+            className={cn(
+              'flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all',
+              tab === i
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <t.icon className="h-4 w-4" />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        {tab === 0 && <RevenueTab />}
+        {tab === 1 && <VisitsTab />}
+        {tab === 2 && <VaccinationsTab />}
+        {tab === 3 && <TopServicesTab />}
+      </div>
+    </motion.div>
   );
 }

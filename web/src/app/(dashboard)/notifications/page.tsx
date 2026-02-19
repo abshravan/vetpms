@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
   Table,
   TableBody,
@@ -11,12 +12,8 @@ import {
   TableRow,
   TablePagination,
   Chip,
-  Stack,
-  Alert,
-  FormControlLabel,
-  Switch,
 } from '@mui/material';
-import { RefreshCw, Check, X } from 'lucide-react';
+import { RefreshCw, Check, X, Bell, AlertTriangle } from 'lucide-react';
 import { notificationsApi } from '../../../api/notifications';
 import {
   AppNotification,
@@ -24,6 +21,7 @@ import {
   NOTIFICATION_TYPE_LABELS,
   NOTIFICATION_PRIORITY_COLORS,
 } from '../../../types';
+import { cn } from '../../../lib/utils';
 
 export default function NotificationsPage() {
   const router = useRouter();
@@ -89,41 +87,78 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
+      {/* Page header */}
+      <div className="mb-8 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
-          <p className="mt-1 text-sm text-muted-foreground">System alerts and activity updates</p>
+          <div className="mb-1 flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-primary">Alerts</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">System alerts and activity updates</p>
         </div>
-        <Stack direction="row" spacing={1}>
+        <div className="flex items-center gap-2">
           <button
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-border px-4 text-sm font-medium shadow-sm transition-all hover:bg-accent active:scale-[0.98] disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/60 px-4 text-sm font-semibold text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-foreground active:scale-[0.98] disabled:opacity-50"
             onClick={handleGenerate}
             disabled={generating}
           >
-            <RefreshCw className={`h-4 w-4 ${generating ? 'animate-spin' : ''}`} />
+            <RefreshCw className={cn('h-4 w-4', generating && 'animate-spin')} />
             {generating ? 'Scanning...' : 'Scan for Alerts'}
           </button>
           <button
-            className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-sm font-medium shadow-sm transition-all hover:bg-accent active:scale-[0.98]"
+            className="inline-flex h-10 items-center rounded-xl border border-border/60 px-4 text-sm font-semibold text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-foreground active:scale-[0.98]"
             onClick={handleMarkAllRead}
           >
             Mark All Read
           </button>
-        </Stack>
+        </div>
       </div>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      {genResult && <Alert severity="success" sx={{ mb: 2 }}>{genResult}</Alert>}
+      {error && (
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">{error}</p>
+        </div>
+      )}
+      {genResult && (
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-success/20 bg-success/5 p-3.5">
+          <Check className="h-4 w-4 shrink-0 text-success" />
+          <p className="text-sm text-success">{genResult}</p>
+        </div>
+      )}
 
-      <div className="mb-4">
-        <FormControlLabel
-          control={<Switch checked={unreadOnly} onChange={(e) => { setUnreadOnly(e.target.checked); setPage(0); }} />}
-          label="Unread only"
-        />
+      {/* Filter toggle */}
+      <div className="mb-5">
+        <div className="inline-flex rounded-xl border border-border/60 bg-muted/50 p-1">
+          <button
+            onClick={() => { setUnreadOnly(false); setPage(0); }}
+            className={cn(
+              'rounded-lg px-4 py-1.5 text-xs font-semibold transition-all',
+              !unreadOnly ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            All
+          </button>
+          <button
+            onClick={() => { setUnreadOnly(true); setPage(0); }}
+            className={cn(
+              'rounded-lg px-4 py-1.5 text-xs font-semibold transition-all',
+              unreadOnly ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            Unread Only
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-card">
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -149,7 +184,7 @@ export default function NotificationsPage() {
                 >
                   <TableCell>
                     {!notif.isRead && (
-                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <div className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </TableCell>
                   <TableCell>
@@ -173,7 +208,7 @@ export default function NotificationsPage() {
                     <div className="flex items-center gap-1">
                       {!notif.isRead && (
                         <button
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
                           title="Mark read"
                           aria-label="Mark as read"
                           onClick={() => handleMarkRead(notif.id)}
@@ -182,7 +217,7 @@ export default function NotificationsPage() {
                         </button>
                       )}
                       <button
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive hover:shadow-sm"
                         title="Dismiss"
                         aria-label="Dismiss notification"
                         onClick={() => handleDismiss(notif.id)}
@@ -195,10 +230,12 @@ export default function NotificationsPage() {
               ))}
               {data?.data.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                    <span className="text-muted-foreground">
-                      No notifications. Click &quot;Scan for Alerts&quot; to check for new alerts.
-                    </span>
+                  <TableCell colSpan={7} align="center" sx={{ py: 10 }}>
+                    <div className="flex flex-col items-center gap-2">
+                      <Bell className="h-10 w-10 text-muted-foreground/20" />
+                      <p className="text-sm font-medium text-muted-foreground/60">No notifications</p>
+                      <p className="text-xs text-muted-foreground/40">Click &quot;Scan for Alerts&quot; to check for new alerts</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -216,6 +253,6 @@ export default function NotificationsPage() {
           )}
         </TableContainer>
       </div>
-    </div>
+    </motion.div>
   );
 }
