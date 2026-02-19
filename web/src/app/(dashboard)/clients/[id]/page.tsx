@@ -2,24 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import {
-  Box,
-  Paper,
-  Grid,
-  Button,
-  Chip,
-  Card,
-  CardContent,
-  CardActionArea,
-  Divider,
-  Typography,
-} from '@mui/material';
-import { ArrowLeft, Loader2, Pencil, Plus, PawPrint } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Chip } from '@mui/material';
+import { ArrowLeft, Loader2, Pencil, Plus, PawPrint, Users, AlertTriangle } from 'lucide-react';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
 import { Client, CreateClientData, CreatePatientData } from '../../../../types';
 import ClientFormDialog from '../../../../components/clients/ClientFormDialog';
 import PatientFormDialog from '../../../../components/patients/PatientFormDialog';
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{label}</span>
+      <p className="mt-0.5 text-sm">{children}</p>
+    </div>
+  );
+}
 
 export default function ClientDetailPage() {
   const { id } = useParams() as { id: string };
@@ -60,15 +59,17 @@ export default function ClientDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Loading client...</span>
       </div>
     );
   }
 
   if (error || !client) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+      <div className="flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
         <p className="text-sm text-destructive">{error || 'Client not found'}</p>
       </div>
     );
@@ -86,141 +87,126 @@ export default function ClientDetailPage() {
 
   const sexLabel = (sex: string) => {
     const map: Record<string, string> = {
-      male: 'M (Intact)',
-      female: 'F (Intact)',
-      male_neutered: 'M (Neutered)',
-      female_spayed: 'F (Spayed)',
-      unknown: 'Unknown',
+      male: 'M (Intact)', female: 'F (Intact)', male_neutered: 'M (Neutered)',
+      female_spayed: 'F (Spayed)', unknown: 'Unknown',
     };
     return map[sex] || sex;
   };
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-1 mb-2">
-        <button onClick={() => router.push('/clients')} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+      <div className="mb-6 flex items-center gap-2">
+        <button
+          onClick={() => router.push('/clients')}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+        >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold tracking-tight flex-grow">
-          {client.lastName}, {client.firstName}
-        </h1>
+        <div className="flex-grow">
+          <div className="mb-0.5 flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Client Profile</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {client.lastName}, {client.firstName}
+          </h1>
+        </div>
         <Chip
           label={client.isActive ? 'Active' : 'Inactive'}
           size="small"
           color={client.isActive ? 'success' : 'default'}
         />
-        <Button startIcon={<Pencil className="h-4 w-4" />} onClick={() => setEditDialogOpen(true)}>
+        <button
+          onClick={() => setEditDialogOpen(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+        >
+          <Pencil className="h-3.5 w-3.5" />
           Edit
-        </Button>
+        </button>
       </div>
 
-      {/* Client Info */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="caption" color="text.secondary">Email</Typography>
-            <Typography variant="body2">{client.email}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="caption" color="text.secondary">Phone</Typography>
-            <Typography variant="body2">{client.phone}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="caption" color="text.secondary">Alt. Phone</Typography>
-            <Typography variant="body2">{client.alternatePhone || '—'}</Typography>
-          </Grid>
-          <Grid item xs={12} sm={8}>
-            <Typography variant="caption" color="text.secondary">Address</Typography>
-            <Typography variant="body2">
+      {/* Client Info Card */}
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Contact Information</h2>
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-4" />
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <Field label="Email">{client.email}</Field>
+          <Field label="Phone">{client.phone}</Field>
+          <Field label="Alt. Phone">{client.alternatePhone || '—'}</Field>
+          <div className="col-span-2">
+            <Field label="Address">
               {[client.address, client.city, client.state, client.zipCode].filter(Boolean).join(', ') || '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="caption" color="text.secondary">Since</Typography>
-            <Typography variant="body2">{new Date(client.createdAt).toLocaleDateString()}</Typography>
-          </Grid>
-          {client.notes && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="text.secondary">Notes</Typography>
-              <Typography variant="body2">{client.notes}</Typography>
-            </Grid>
-          )}
-        </Grid>
-      </Paper>
+            </Field>
+          </div>
+          <Field label="Client Since">{new Date(client.createdAt).toLocaleDateString()}</Field>
+        </div>
+        {client.notes && (
+          <>
+            <div className="my-4 h-px bg-border/50" />
+            <Field label="Notes">{client.notes}</Field>
+          </>
+        )}
+      </div>
 
-      {/* Patients */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="subtitle1" fontWeight={600}>
-          Patients ({client.patients?.length ?? 0})
-        </Typography>
-        <Button variant="contained" startIcon={<Plus className="h-4 w-4" />} onClick={() => setPatientDialogOpen(true)}>
+      {/* Patients Header */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">
+          Patients <span className="text-sm font-normal text-muted-foreground">({client.patients?.length ?? 0})</span>
+        </h2>
+        <button
+          onClick={() => setPatientDialogOpen(true)}
+          className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
+        >
+          <Plus className="h-4 w-4" />
           Add Patient
-        </Button>
-      </Box>
+        </button>
+      </div>
 
+      {/* Patient Cards */}
       {client.patients && client.patients.length > 0 ? (
-        <Grid container spacing={2}>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {client.patients.map((patient) => (
-            <Grid item xs={12} sm={6} md={4} key={patient.id}>
-              <Card variant="outlined">
-                <CardActionArea onClick={() => router.push(`/patients/${patient.id}`)}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                      <PawPrint className="h-4 w-4 text-primary" />
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {patient.name}
-                      </Typography>
-                      {patient.isDeceased && (
-                        <Chip label="Deceased" size="small" color="default" />
-                      )}
-                    </Box>
-                    <Divider sx={{ my: 1 }} />
-                    <Grid container spacing={1}>
-                      <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary">Species</Typography>
-                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{patient.species}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary">Breed</Typography>
-                        <Typography variant="body2">{patient.breed || '—'}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary">Sex</Typography>
-                        <Typography variant="body2">{sexLabel(patient.sex)}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary">Age</Typography>
-                        <Typography variant="body2">{formatAge(patient.dateOfBirth)}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="caption" color="text.secondary">Weight</Typography>
-                        <Typography variant="body2">
-                          {patient.weight ? `${patient.weight} ${patient.weightUnit || 'kg'}` : '—'}
-                        </Typography>
-                      </Grid>
-                      {patient.allergies && (
-                        <Grid item xs={12}>
-                          <Chip label={`Allergies: ${patient.allergies}`} size="small" color="warning" variant="outlined" />
-                        </Grid>
-                      )}
-                    </Grid>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
-            </Grid>
+            <div
+              key={patient.id}
+              onClick={() => router.push(`/patients/${patient.id}`)}
+              className="group cursor-pointer rounded-2xl border border-border/60 bg-card p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-card-hover"
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+                  <PawPrint className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-sm font-semibold">{patient.name}</span>
+                {patient.isDeceased && <Chip label="Deceased" size="small" />}
+              </div>
+              <div className="h-px bg-border/50 mb-3" />
+              <div className="grid grid-cols-2 gap-2">
+                <Field label="Species"><span className="capitalize">{patient.species}</span></Field>
+                <Field label="Breed">{patient.breed || '—'}</Field>
+                <Field label="Sex">{sexLabel(patient.sex)}</Field>
+                <Field label="Age">{formatAge(patient.dateOfBirth)}</Field>
+                <Field label="Weight">{patient.weight ? `${patient.weight} ${patient.weightUnit || 'kg'}` : '—'}</Field>
+              </div>
+              {patient.allergies && (
+                <div className="mt-3">
+                  <Chip label={`Allergies: ${patient.allergies}`} size="small" color="warning" variant="outlined" />
+                </div>
+              )}
+            </div>
           ))}
-        </Grid>
+        </div>
       ) : (
-        <Paper variant="outlined" sx={{ p: 3, textAlign: 'center' }}>
-          <PawPrint className="h-12 w-12 text-muted-foreground/40 mb-2" />
-          <Typography variant="body2" color="text.secondary">
-            No patients registered. Click "Add Patient" to register an animal.
-          </Typography>
-        </Paper>
+        <div className="rounded-2xl border border-border/60 bg-card p-8 text-center shadow-card">
+          <PawPrint className="mx-auto mb-2 h-10 w-10 text-muted-foreground/20" />
+          <p className="text-sm font-medium text-muted-foreground/60">No patients registered</p>
+          <p className="text-xs text-muted-foreground/40">Click &quot;Add Patient&quot; to register an animal</p>
+        </div>
       )}
 
-      {/* Dialogs */}
       <ClientFormDialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
@@ -234,6 +220,6 @@ export default function ClientDetailPage() {
         onSubmit={handleAddPatient}
         clientId={client.id}
       />
-    </div>
+    </motion.div>
   );
 }

@@ -2,14 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Box,
-  Typography,
-  Paper,
-  Grid,
-  Button,
   Chip,
-  Divider,
   Table,
   TableBody,
   TableCell,
@@ -17,7 +12,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Stethoscope } from 'lucide-react';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
 import {
@@ -117,14 +112,16 @@ export default function VisitDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </div>
     );
   }
   if (error || !visit) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+      <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
         <p className="text-sm text-destructive">{error || 'Visit not found'}</p>
       </div>
     );
@@ -135,69 +132,83 @@ export default function VisitDetailPage() {
   const categoryLabel = (c: string) => TREATMENT_CATEGORY_OPTIONS.find((o) => o.value === c)?.label || c;
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-1 mb-2">
-        <button onClick={() => router.push(`/patients/${visit.patientId}`)} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+      <div className="mb-6 flex items-center gap-3">
+        <button
+          onClick={() => router.push(`/patients/${visit.patientId}`)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+        >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="text-2xl font-bold tracking-tight flex-grow">
-          Visit — {visit.patient?.name || 'Unknown'}
-        </h1>
+        <div className="flex-grow">
+          <div className="mb-0.5 flex items-center gap-2">
+            <Stethoscope className="h-3.5 w-3.5 text-primary" />
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">VISIT</span>
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {visit.patient?.name || 'Unknown'}
+          </h1>
+        </div>
         <Chip label={visit.status.replace('_', ' ').toUpperCase()} color={STATUS_COLORS[visit.status]} />
         {!isCompleted && (
-          <Button variant="contained" color="success" onClick={handleComplete}>
+          <button
+            onClick={handleComplete}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
+          >
             Complete Visit
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Visit info */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Patient</Typography>
-            <Typography
-              variant="body2"
-              sx={{ cursor: 'pointer', color: 'primary.main' }}
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Patient</span>
+            <p
+              className="cursor-pointer text-sm text-primary hover:underline"
               onClick={() => router.push(`/patients/${visit.patientId}`)}
             >
               {visit.patient?.name} ({visit.patient?.species})
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Owner</Typography>
-            <Typography
-              variant="body2"
-              sx={{ cursor: 'pointer', color: 'primary.main' }}
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Owner</span>
+            <p
+              className="cursor-pointer text-sm text-primary hover:underline"
               onClick={() => router.push(`/clients/${visit.clientId}`)}
             >
               {visit.client ? `${visit.client.lastName}, ${visit.client.firstName}` : '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Veterinarian</Typography>
-            <Typography variant="body2">
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Veterinarian</span>
+            <p className="text-sm">
               {visit.vet ? `Dr. ${visit.vet.lastName}, ${visit.vet.firstName}` : '—'}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Typography variant="caption" color="text.secondary">Date</Typography>
-            <Typography variant="body2">{new Date(visit.createdAt).toLocaleString()}</Typography>
-          </Grid>
+            </p>
+          </div>
+          <div>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Date</span>
+            <p className="text-sm">{new Date(visit.createdAt).toLocaleString()}</p>
+          </div>
           {visit.chiefComplaint && (
-            <Grid item xs={12}>
-              <Typography variant="caption" color="text.secondary">Chief Complaint</Typography>
-              <Typography variant="body2">{visit.chiefComplaint}</Typography>
-            </Grid>
+            <div className="col-span-2 sm:col-span-4">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Chief Complaint</span>
+              <p className="text-sm">{visit.chiefComplaint}</p>
+            </div>
           )}
-        </Grid>
-      </Paper>
+        </div>
+      </div>
 
       {/* Vitals */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Vitals</h2>
-        <Divider sx={{ mb: 2 }} />
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Vitals</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {visit.vitals && visit.vitals.length > 0 && (
           <TableContainer sx={{ mb: 2 }}>
@@ -239,12 +250,12 @@ export default function VisitDetailPage() {
         )}
 
         {!isCompleted && <VitalsForm onSubmit={handleRecordVitals} disabled={isCompleted} />}
-      </Paper>
+      </div>
 
       {/* Treatments */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Treatments & Procedures</h2>
-        <Divider sx={{ mb: 2 }} />
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Treatments &amp; Procedures</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {treatments.length > 0 && (
           <TableContainer sx={{ mb: 2 }}>
@@ -267,8 +278,8 @@ export default function VisitDetailPage() {
                   <TableRow key={tx.id}>
                     <TableCell>{categoryLabel(tx.category)}</TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={500}>{tx.name}</Typography>
-                      {tx.description && <Typography variant="caption" color="text.secondary">{tx.description}</Typography>}
+                      <span className="text-sm font-medium">{tx.name}</span>
+                      {tx.description && <span className="block text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{tx.description}</span>}
                     </TableCell>
                     <TableCell>{tx.dosage ? `${tx.dosage} ${tx.dosageUnit || ''}`.trim() : '—'}</TableCell>
                     <TableCell>{tx.route || '—'}</TableCell>
@@ -285,10 +296,20 @@ export default function VisitDetailPage() {
                     {!isCompleted && (
                       <TableCell>
                         {(tx.status === 'ordered' || tx.status === 'in_progress') && (
-                          <Box sx={{ display: 'flex', gap: 0.5 }}>
-                            <Button size="small" onClick={() => handleTreatmentStatus(tx.id, 'completed')}>Done</Button>
-                            <Button size="small" color="error" onClick={() => handleTreatmentStatus(tx.id, 'cancelled')}>Cancel</Button>
-                          </Box>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleTreatmentStatus(tx.id, 'completed')}
+                              className="inline-flex h-7 items-center rounded-lg px-2 text-xs font-medium text-primary transition-all hover:bg-accent"
+                            >
+                              Done
+                            </button>
+                            <button
+                              onClick={() => handleTreatmentStatus(tx.id, 'cancelled')}
+                              className="inline-flex h-7 items-center rounded-lg px-2 text-xs font-medium text-destructive transition-all hover:bg-destructive/10"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         )}
                       </TableCell>
                     )}
@@ -308,16 +329,16 @@ export default function VisitDetailPage() {
           />
         )}
         {isCompleted && treatments.length === 0 && (
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <p className="text-center text-sm text-muted-foreground">
             No treatments recorded for this visit.
-          </Typography>
+          </p>
         )}
-      </Paper>
+      </div>
 
       {/* Vaccinations */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Vaccinations</h2>
-        <Divider sx={{ mb: 2 }} />
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Vaccinations</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {vaccinations.length > 0 && (
           <TableContainer sx={{ mb: 2 }}>
@@ -337,7 +358,7 @@ export default function VisitDetailPage() {
               <TableBody>
                 {vaccinations.map((v) => (
                   <TableRow key={v.id}>
-                    <TableCell><Typography variant="body2" fontWeight={500}>{v.vaccineName}</Typography></TableCell>
+                    <TableCell><span className="text-sm font-medium">{v.vaccineName}</span></TableCell>
                     <TableCell>{v.manufacturer || '—'}</TableCell>
                     <TableCell>{v.lotNumber || '—'}</TableCell>
                     <TableCell>{[v.route, v.site].filter(Boolean).join(' / ') || '—'}</TableCell>
@@ -367,69 +388,69 @@ export default function VisitDetailPage() {
           />
         )}
         {isCompleted && vaccinations.length === 0 && (
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <p className="text-center text-sm text-muted-foreground">
             No vaccinations recorded for this visit.
-          </Typography>
+          </p>
         )}
-      </Paper>
+      </div>
 
       {/* Clinical Notes */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Clinical Notes</h2>
-        <Divider sx={{ mb: 2 }} />
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Clinical Notes</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {visit.clinicalNotes && visit.clinicalNotes.length > 0 && (
-          <Box sx={{ mb: 3 }}>
+          <div className="mb-4 space-y-3">
             {visit.clinicalNotes.map((note) => (
-              <Paper key={note.id} variant="outlined" sx={{ p: 2, mb: 1.5, bgcolor: 'grey.50' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <div key={note.id} className="rounded-xl border border-border/60 bg-muted/30 p-4">
+                <div className="mb-2 flex items-center justify-between">
                   <Chip label={noteTypeLabel(note.noteType)} size="small" variant="outlined" />
-                  <Typography variant="caption" color="text.secondary">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
                     {note.author ? `Dr. ${note.author.lastName}` : ''} — {new Date(note.createdAt).toLocaleString()}
-                  </Typography>
-                </Box>
+                  </span>
+                </div>
                 {note.noteType === 'soap' ? (
-                  <Grid container spacing={1.5}>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {note.content.subjective && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="caption" fontWeight={600} color="primary">S — Subjective</Typography>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{note.content.subjective}</Typography>
-                      </Grid>
+                      <div>
+                        <span className="text-xs font-semibold text-primary">S — Subjective</span>
+                        <p className="whitespace-pre-wrap text-sm">{note.content.subjective}</p>
+                      </div>
                     )}
                     {note.content.objective && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="caption" fontWeight={600} color="primary">O — Objective</Typography>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{note.content.objective}</Typography>
-                      </Grid>
+                      <div>
+                        <span className="text-xs font-semibold text-primary">O — Objective</span>
+                        <p className="whitespace-pre-wrap text-sm">{note.content.objective}</p>
+                      </div>
                     )}
                     {note.content.assessment && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="caption" fontWeight={600} color="primary">A — Assessment</Typography>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{note.content.assessment}</Typography>
-                      </Grid>
+                      <div>
+                        <span className="text-xs font-semibold text-primary">A — Assessment</span>
+                        <p className="whitespace-pre-wrap text-sm">{note.content.assessment}</p>
+                      </div>
                     )}
                     {note.content.plan && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="caption" fontWeight={600} color="primary">P — Plan</Typography>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{note.content.plan}</Typography>
-                      </Grid>
+                      <div>
+                        <span className="text-xs font-semibold text-primary">P — Plan</span>
+                        <p className="whitespace-pre-wrap text-sm">{note.content.plan}</p>
+                      </div>
                     )}
-                  </Grid>
+                  </div>
                 ) : (
-                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{note.content.text}</Typography>
+                  <p className="whitespace-pre-wrap text-sm">{note.content.text}</p>
                 )}
-              </Paper>
+              </div>
             ))}
-          </Box>
+          </div>
         )}
 
         {!isCompleted && <SOAPNoteForm onSubmit={handleAddNote} disabled={isCompleted} />}
         {isCompleted && visit.clinicalNotes.length === 0 && (
-          <Typography variant="body2" color="text.secondary" textAlign="center">
+          <p className="text-center text-sm text-muted-foreground">
             No clinical notes recorded for this visit.
-          </Typography>
+          </p>
         )}
-      </Paper>
-    </div>
+      </div>
+    </motion.div>
   );
 }

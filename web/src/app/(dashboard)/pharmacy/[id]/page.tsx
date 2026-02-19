@@ -2,12 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 import {
-  Typography,
-  Box,
-  Paper,
-  Grid,
-  Button,
   Chip,
   Table,
   TableBody,
@@ -21,10 +17,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Alert,
-  Stack,
 } from '@mui/material';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Package, AlertCircle } from 'lucide-react';
 import { inventoryApi } from '../../../../api/inventory';
 import {
   InventoryItem,
@@ -100,14 +94,16 @@ export default function InventoryDetailPage() {
   if (!item) {
     if (error) {
       return (
-        <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6">
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       );
     }
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex flex-col items-center justify-center gap-2 py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <span className="text-sm text-muted-foreground">Loading...</span>
       </div>
     );
   }
@@ -117,119 +113,157 @@ export default function InventoryDetailPage() {
   const catLabel = ITEM_CATEGORY_OPTIONS.find((o) => o.value === item.category)?.label || item.category;
 
   return (
-    <div>
-      <Button startIcon={<ArrowLeft className="h-4 w-4" />} onClick={() => router.push('/pharmacy')} sx={{ mb: 2 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
+    >
+      {/* Back button */}
+      <button
+        onClick={() => router.push('/pharmacy')}
+        className="mb-4 inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+      >
+        <ArrowLeft className="h-4 w-4" />
         Back to Inventory
-      </Button>
+      </button>
 
       {error && (
-        <div className="flex items-center justify-center rounded-lg border border-destructive/20 bg-destructive/5 p-6 mb-2">
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
       {/* Header */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap">
-          <Box>
-            <h1 className="text-2xl font-bold tracking-tight">
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="mb-0.5 flex items-center gap-2">
+              <Package className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">INVENTORY ITEM</span>
+            </div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
               {item.name}
-              {item.requiresPrescription && <Chip label="Rx" size="small" color="info" sx={{ ml: 1 }} />}
-              {item.isControlledSubstance && <Chip label="CII" size="small" color="error" sx={{ ml: 0.5 }} />}
+              {item.requiresPrescription && <Chip label="Rx" size="small" color="info" />}
+              {item.isControlledSubstance && <Chip label="CII" size="small" color="error" />}
             </h1>
-            <Typography variant="body2" color="text.secondary">
+            <p className="mt-1 text-sm text-muted-foreground">
               SKU: {item.sku} &bull; {catLabel} &bull; Unit: {item.unit}
-            </Typography>
+            </p>
             {item.manufacturer && (
-              <Typography variant="body2" color="text.secondary">
+              <p className="text-sm text-muted-foreground">
                 Manufacturer: {item.manufacturer}
                 {item.supplier && ` — Supplier: ${item.supplier}`}
-              </Typography>
+              </p>
             )}
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Button variant="contained" color="success" onClick={() => setRestockOpen(true)}>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setRestockOpen(true)}
+              className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
+            >
               Restock
-            </Button>
-            <Button variant="outlined" onClick={() => setAdjustOpen(true)}>
+            </button>
+            <button
+              onClick={() => setAdjustOpen(true)}
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+            >
               Adjust
-            </Button>
-            <Button variant="outlined" onClick={() => router.push(`/pharmacy/${id}/edit`)}>
+            </button>
+            <button
+              onClick={() => router.push(`/pharmacy/${id}/edit`)}
+              className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+            >
               Edit
-            </Button>
-          </Stack>
-        </Box>
-      </Paper>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Stats */}
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={6} sm={3}>
-          <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">In Stock</Typography>
-            <Typography variant="h5" color={isLow ? 'error' : 'success.main'} fontWeight={700}>
-              {item.quantityOnHand}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">Reorder Level</Typography>
-            <Typography variant="h5">{item.reorderLevel}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">Cost Price</Typography>
-            <Typography variant="h5">{fmt(item.costPrice)}</Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} sm={3}>
-          <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">Selling Price</Typography>
-            <Typography variant="h5">{fmt(item.sellingPrice)}</Typography>
-          </Paper>
-        </Grid>
-      </Grid>
+      <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-2xl border border-border/60 bg-card p-5 text-center shadow-card">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">In Stock</span>
+          <p className={`text-2xl font-bold ${isLow ? 'text-destructive' : 'text-emerald-600'}`}>
+            {item.quantityOnHand}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 text-center shadow-card">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Reorder Level</span>
+          <p className="text-2xl font-bold">{item.reorderLevel}</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 text-center shadow-card">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Cost Price</span>
+          <p className="text-2xl font-bold">{fmt(item.costPrice)}</p>
+        </div>
+        <div className="rounded-2xl border border-border/60 bg-card p-5 text-center shadow-card">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Selling Price</span>
+          <p className="text-2xl font-bold">{fmt(item.sellingPrice)}</p>
+        </div>
+      </div>
 
       {/* Alerts */}
       {isLow && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          Stock is at or below reorder level ({item.reorderLevel}). Recommended reorder quantity: {item.reorderQuantity}.
-        </Alert>
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-amber-300/40 bg-amber-50 p-3.5 dark:border-amber-500/20 dark:bg-amber-500/5">
+          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+          <p className="text-sm text-amber-800 dark:text-amber-400">
+            Stock is at or below reorder level ({item.reorderLevel}). Recommended reorder quantity: {item.reorderQuantity}.
+          </p>
+        </div>
       )}
       {isExpired && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          This item expired on {new Date(item.expirationDate!).toLocaleDateString()}.
-        </Alert>
+        <div className="mb-4 flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">
+            This item expired on {new Date(item.expirationDate!).toLocaleDateString()}.
+          </p>
+        </div>
       )}
 
       {/* Details */}
-      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-        <h2 className="text-sm font-semibold mb-1">Details</h2>
-        <Grid container spacing={1}>
+      <div className="mb-4 rounded-2xl border border-border/60 bg-card p-5 shadow-card">
+        <h2 className="text-lg font-semibold">Details</h2>
+        <div className="my-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {item.lotNumber && (
-            <Grid item xs={6} sm={4}><Typography variant="body2"><strong>Lot #:</strong> {item.lotNumber}</Typography></Grid>
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Lot #</span>
+              <p className="text-sm">{item.lotNumber}</p>
+            </div>
           )}
           {item.expirationDate && (
-            <Grid item xs={6} sm={4}><Typography variant="body2"><strong>Expires:</strong> {new Date(item.expirationDate).toLocaleDateString()}</Typography></Grid>
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Expires</span>
+              <p className="text-sm">{new Date(item.expirationDate).toLocaleDateString()}</p>
+            </div>
           )}
           {item.location && (
-            <Grid item xs={6} sm={4}><Typography variant="body2"><strong>Location:</strong> {item.location}</Typography></Grid>
+            <div>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Location</span>
+              <p className="text-sm">{item.location}</p>
+            </div>
           )}
           {item.description && (
-            <Grid item xs={12}><Typography variant="body2"><strong>Description:</strong> {item.description}</Typography></Grid>
+            <div className="col-span-2 sm:col-span-3">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Description</span>
+              <p className="text-sm">{item.description}</p>
+            </div>
           )}
           {item.notes && (
-            <Grid item xs={12}><Typography variant="body2"><strong>Notes:</strong> {item.notes}</Typography></Grid>
+            <div className="col-span-2 sm:col-span-3">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">Notes</span>
+              <p className="text-sm">{item.notes}</p>
+            </div>
           )}
-        </Grid>
-      </Paper>
+        </div>
+      </div>
 
       {/* Transaction History */}
-      <Paper variant="outlined">
-        <Box sx={{ p: 2, pb: 0 }}>
-          <h2 className="text-sm font-semibold">Transaction History</h2>
-        </Box>
+      <div className="rounded-2xl border border-border/60 bg-card shadow-card">
+        <div className="p-5 pb-0">
+          <h2 className="text-lg font-semibold">Transaction History</h2>
+          <div className="mt-3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        </div>
         <TableContainer>
           <Table size="small">
             <TableHead>
@@ -257,13 +291,9 @@ export default function InventoryDetailPage() {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <Typography
-                      component="span"
-                      color={txn.quantity > 0 ? 'success.main' : 'error.main'}
-                      fontWeight={600}
-                    >
+                    <span className={`font-semibold ${txn.quantity > 0 ? 'text-emerald-600' : 'text-destructive'}`}>
                       {txn.quantity > 0 ? `+${txn.quantity}` : txn.quantity}
-                    </Typography>
+                    </span>
                   </TableCell>
                   <TableCell align="right">{txn.quantityAfter}</TableCell>
                   <TableCell align="right">{txn.unitCost != null ? fmt(txn.unitCost) : '—'}</TableCell>
@@ -274,7 +304,7 @@ export default function InventoryDetailPage() {
               {txns?.data.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    <Typography color="text.secondary">No transactions yet.</Typography>
+                    <span className="text-sm text-muted-foreground">No transactions yet.</span>
                   </TableCell>
                 </TableRow>
               )}
@@ -291,13 +321,13 @@ export default function InventoryDetailPage() {
             rowsPerPageOptions={[15]}
           />
         )}
-      </Paper>
+      </div>
 
       {/* Restock Dialog */}
       <Dialog open={restockOpen} onClose={() => setRestockOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Restock Item</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+          <div className="mt-2 flex flex-col gap-4">
             <TextField
               label="Quantity"
               type="number"
@@ -318,13 +348,22 @@ export default function InventoryDetailPage() {
               value={restockRef}
               onChange={(e) => setRestockRef(e.target.value)}
             />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setRestockOpen(false)}>Cancel</Button>
-          <Button variant="contained" color="success" onClick={handleRestock} disabled={restockQty <= 0}>
+          <button
+            onClick={() => setRestockOpen(false)}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleRestock}
+            disabled={restockQty <= 0}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
             Restock
-          </Button>
+          </button>
         </DialogActions>
       </Dialog>
 
@@ -332,10 +371,10 @@ export default function InventoryDetailPage() {
       <Dialog open={adjustOpen} onClose={() => setAdjustOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Adjust Stock</DialogTitle>
         <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Typography variant="body2" color="text.secondary">
+          <div className="mt-2 flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
               Enter a positive number to add stock, or negative to remove.
-            </Typography>
+            </p>
             <TextField
               label="Adjustment Quantity"
               type="number"
@@ -351,15 +390,24 @@ export default function InventoryDetailPage() {
               value={adjustNotes}
               onChange={(e) => setAdjustNotes(e.target.value)}
             />
-          </Stack>
+          </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAdjustOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAdjust} disabled={adjustQty === 0}>
+          <button
+            onClick={() => setAdjustOpen(false)}
+            className="inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAdjust}
+            disabled={adjustQty === 0}
+            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-4 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
             Adjust
-          </Button>
+          </button>
         </DialogActions>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }
