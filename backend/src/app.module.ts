@@ -14,6 +14,7 @@ import { ReportsModule } from './reports/reports.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { SettingsModule } from './settings/settings.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     InventoryModule,
     SettingsModule,
     NotificationsModule,
+    SeedModule,
   ],
 })
 export class AppModule {}
