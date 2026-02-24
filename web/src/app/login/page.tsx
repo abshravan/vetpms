@@ -37,14 +37,18 @@ export default function LoginPage() {
     setDemoLoading(true);
     try {
       setDemoStep('Seeding demo data...');
-      await seedApi.seedDemo();
+      try {
+        await seedApi.seedDemo();
+      } catch {
+        // Seed failed (backend may not be running) — continue with login anyway
+      }
       setDemoStep('Signing you in...');
       await login('sarah.mitchell@vetpms.demo', 'demo1234');
       setDemoStep('Ready!');
       await new Promise((r) => setTimeout(r, 400));
       router.push('/');
     } catch {
-      setError('Failed to set up demo. Make sure the backend is running.');
+      setError('Failed to sign in. Please try again.');
       setDemoStep('');
     } finally {
       setDemoLoading(false);
