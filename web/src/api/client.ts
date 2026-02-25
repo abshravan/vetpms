@@ -6,11 +6,29 @@ const api = axios.create({
 });
 
 // Attach access token to every request (if available)
-api.interceptors.request.use((config) => {
+// In demo mode, intercept and return mock data without hitting the backend
+api.interceptors.request.use(async (config) => {
   const token = localStorage.getItem('accessToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  if (typeof window !== 'undefined' && localStorage.getItem('demoMode') === 'true') {
+    const { handleMockRequest } = await import('../demo/mock-api');
+    const mockData = handleMockRequest(config.method || 'get', config.url || '');
+    if (mockData !== undefined) {
+      config.adapter = () =>
+        Promise.resolve({
+          data: mockData,
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config,
+          request: {},
+        });
+    }
+  }
+
   return config;
 });
 
