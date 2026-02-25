@@ -10,6 +10,7 @@ import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 import Header from './Header';
 import CommandPalette from './CommandPalette';
 import ToastProvider from './ToastProvider';
+import QuickActions from './QuickActions';
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
       <Header />
       <CommandPalette />
       <ToastProvider />
+      <QuickActions />
       <main
         className="min-h-screen flex-1 pt-16 transition-all duration-300"
         style={{ marginLeft: isMobile ? 0 : SIDEBAR_WIDTH }}

@@ -18,6 +18,7 @@ import { clientsApi } from '../../../api/clients';
 import { Client, PaginatedResult } from '../../../types';
 import ClientFormDialog from '../../../components/clients/ClientFormDialog';
 import toast from 'react-hot-toast';
+import { TablePageSkeleton } from '../../../components/Skeleton';
 import { cn } from '../../../lib/utils';
 
 export default function ClientsListPage() {
@@ -116,14 +117,15 @@ export default function ClientsListPage() {
             </TableHead>
             <TableBody>
               {loading && !result ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      <span className="text-sm">Loading clients...</span>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    {Array.from({ length: 7 }).map((__, j) => (
+                      <TableCell key={j}>
+                        <div className="h-4 animate-pulse rounded bg-muted" style={{ width: j === 0 ? '80%' : j === 6 ? '40px' : '60%' }} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
               ) : result && result.data.length > 0 ? (
                 result.data.map((client) => (
                   <TableRow

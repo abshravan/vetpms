@@ -33,6 +33,8 @@ import {
   INVOICE_STATUS_COLORS,
 } from '../../../../types';
 import PatientFormDialog from '../../../../components/patients/PatientFormDialog';
+import PatientTimeline from '../../../../components/PatientTimeline';
+import { PatientProfileSkeleton } from '../../../../components/Skeleton';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -122,12 +124,7 @@ export default function PatientProfilePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading patient...</span>
-      </div>
-    );
+    return <PatientProfileSkeleton />;
   }
 
   if (error || !patient) {
@@ -406,6 +403,11 @@ export default function PatientProfilePage() {
         ) : (
           <p className="text-center text-sm text-muted-foreground/60">No invoices for this patient.</p>
         )}
+      </SectionCard>
+
+      {/* Timeline */}
+      <SectionCard title="Patient Timeline" count={visits.length + vaccinations.length + invoices.length}>
+        <PatientTimeline visits={visits} vaccinations={vaccinations} invoices={invoices} />
       </SectionCard>
 
       {/* Visit History */}

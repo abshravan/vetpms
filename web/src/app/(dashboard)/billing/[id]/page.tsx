@@ -23,6 +23,7 @@ import { ArrowLeft, Loader2, AlertTriangle, Trash2, Receipt, Printer, Download }
 import toast from 'react-hot-toast';
 import { billingApi } from '../../../../api/billing';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
+import { CardSkeleton } from '../../../../components/Skeleton';
 import {
   Invoice,
   RecordPaymentData,
@@ -112,12 +113,7 @@ export default function InvoiceDetailPage() {
   const fmt = (n: number | string) => `$${Number(n).toFixed(2)}`;
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading...</span>
-      </div>
-    );
+    return <CardSkeleton lines={8} />;
   }
   if (error || !invoice) {
     return (

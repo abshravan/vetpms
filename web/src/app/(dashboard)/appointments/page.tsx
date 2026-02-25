@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -21,6 +21,7 @@ import {
   CalendarDays,
   Loader2,
   Clock,
+  GripVertical,
 } from 'lucide-react';
 import { appointmentsApi } from '../../../api/appointments';
 import { usersApi, UserSummary } from '../../../api/users';
@@ -31,6 +32,7 @@ import {
   APPOINTMENT_TYPE_OPTIONS,
 } from '../../../types';
 import AppointmentFormDialog from '../../../components/appointments/AppointmentFormDialog';
+import { TablePageSkeleton } from '../../../components/Skeleton';
 import toast from 'react-hot-toast';
 import { cn } from '../../../lib/utils';
 
@@ -136,6 +138,54 @@ export default function AppointmentsPage() {
     await appointmentsApi.create(data);
     toast.success('Appointment created successfully');
     fetchAppointments();
+  };
+
+  // ── Drag & Drop ──
+  const dragApptRef = useRef<Appointment | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+
+  const handleDragStart = (appt: Appointment) => {
+    dragApptRef.current = appt;
+  };
+
+  const handleDragOver = (e: React.DragEvent, cellKey: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDropTarget(cellKey);
+  };
+
+  const handleDragLeave = () => {
+    setDropTarget(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, dayStr: string, hour: number) => {
+    e.preventDefault();
+    setDropTarget(null);
+    const appt = dragApptRef.current;
+    if (!appt) return;
+
+    const oldStart = new Date(appt.startTime);
+    const oldEnd = new Date(appt.endTime);
+    const duration = oldEnd.getTime() - oldStart.getTime();
+    const newStart = new Date(dayStr + 'T00:00:00');
+    newStart.setHours(hour, oldStart.getMinutes(), 0, 0);
+    const newEnd = new Date(newStart.getTime() + duration);
+
+    if (newStart.getTime() === oldStart.getTime()) return;
+
+    try {
+      await appointmentsApi.update(appt.id, {
+        startTime: newStart.toISOString(),
+        endTime: newEnd.toISOString(),
+      });
+      toast.success(
+        `Moved ${appt.patient?.name || 'appointment'} to ${newStart.toLocaleDateString(undefined, { weekday: 'short' })} ${hour > 12 ? hour - 12 : hour}${hour >= 12 ? 'PM' : 'AM'}`,
+      );
+      fetchAppointments();
+    } catch {
+      toast.error('Failed to reschedule appointment');
+    }
+    dragApptRef.current = null;
   };
 
   const dateLabel = useMemo(() => {
@@ -260,12 +310,7 @@ export default function AppointmentsPage() {
       </div>
 
       {/* Loading */}
-      {loading && (
-        <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="text-sm">Loading appointments...</span>
-        </div>
-      )}
+      {loading && <TablePageSkeleton rows={5} />}
 
       {/* Week calendar view */}
       {!loading && view === 'week' && (
@@ -313,6 +358,7 @@ export default function AppointmentsPage() {
                   {weekDays.map((d) => {
                     const dayStr = formatDate(d);
                     const isToday = dayStr === todayStr;
+                    const cellKey = `${dayStr}-${hour}`;
                     const dayAppts = (apptsByDay[dayStr] || []).filter((a) => {
                       const h = new Date(a.startTime).getHours();
                       return h === hour;
@@ -322,34 +368,47 @@ export default function AppointmentsPage() {
                       <div
                         key={dayStr}
                         className={cn(
-                          'min-h-[56px] border-r border-border/30 p-0.5 last:border-r-0',
+                          'min-h-[56px] border-r border-border/30 p-0.5 last:border-r-0 transition-colors',
                           isToday && 'bg-primary/[0.02]',
+                          dropTarget === cellKey && 'bg-primary/10 ring-2 ring-inset ring-primary/30',
                         )}
+                        onDragOver={(e) => handleDragOver(e, cellKey)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, dayStr, hour)}
                       >
-                        {dayAppts.map((appt) => (
-                          <button
-                            key={appt.id}
-                            onClick={() => router.push(`/appointments/${appt.id}`)}
-                            className={cn(
-                              'mb-0.5 w-full rounded-lg border px-1.5 py-1 text-left transition-all hover:shadow-sm',
-                              appt.status === 'cancelled' || appt.status === 'no_show'
-                                ? 'border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-950/20'
-                                : appt.status === 'completed'
-                                  ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/30 dark:bg-emerald-950/20'
-                                  : 'border-primary/20 bg-primary/5 dark:border-primary/20 dark:bg-primary/10',
-                            )}
-                          >
-                            <div className="flex items-center gap-1">
-                              <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_DOT_COLORS[appt.status])} />
-                              <span className="truncate text-[10px] font-semibold">
-                                {appt.patient?.name}
-                              </span>
+                        {dayAppts.map((appt) => {
+                          const isDraggable = appt.status !== 'completed' && appt.status !== 'cancelled' && appt.status !== 'no_show';
+                          return (
+                            <div
+                              key={appt.id}
+                              draggable={isDraggable}
+                              onDragStart={() => isDraggable && handleDragStart(appt)}
+                              onClick={() => router.push(`/appointments/${appt.id}`)}
+                              className={cn(
+                                'group mb-0.5 w-full cursor-pointer rounded-lg border px-1.5 py-1 text-left transition-all hover:shadow-sm',
+                                isDraggable && 'cursor-grab active:cursor-grabbing',
+                                appt.status === 'cancelled' || appt.status === 'no_show'
+                                  ? 'border-red-200 bg-red-50 dark:border-red-900/30 dark:bg-red-950/20'
+                                  : appt.status === 'completed'
+                                    ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/30 dark:bg-emerald-950/20'
+                                    : 'border-primary/20 bg-primary/5 dark:border-primary/20 dark:bg-primary/10',
+                              )}
+                            >
+                              <div className="flex items-center gap-1">
+                                {isDraggable && (
+                                  <GripVertical className="h-3 w-3 shrink-0 text-muted-foreground/30 opacity-0 transition-opacity group-hover:opacity-100" />
+                                )}
+                                <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_DOT_COLORS[appt.status])} />
+                                <span className="truncate text-[10px] font-semibold">
+                                  {appt.patient?.name}
+                                </span>
+                              </div>
+                              <p className="truncate text-[9px] text-muted-foreground">
+                                {formatTime(appt.startTime)} · {typeLabel(appt.type)}
+                              </p>
                             </div>
-                            <p className="truncate text-[9px] text-muted-foreground">
-                              {formatTime(appt.startTime)} · {typeLabel(appt.type)}
-                            </p>
-                          </button>
-                        ))}
+                          );
+                        })}
                       </div>
                     );
                   })}

@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { Client, CreateClientData, CreatePatientData } from '../../../../types';
 import ClientFormDialog from '../../../../components/clients/ClientFormDialog';
 import PatientFormDialog from '../../../../components/patients/PatientFormDialog';
+import { CardSkeleton } from '../../../../components/Skeleton';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -61,12 +62,7 @@ export default function ClientDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading client...</span>
-      </div>
-    );
+    return <CardSkeleton lines={6} />;
   }
 
   if (error || !client) {

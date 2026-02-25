@@ -36,6 +36,7 @@ import VitalsForm from '../../../../components/visits/VitalsForm';
 import SOAPNoteForm from '../../../../components/visits/SOAPNoteForm';
 import TreatmentForm from '../../../../components/visits/TreatmentForm';
 import VaccinationForm from '../../../../components/visits/VaccinationForm';
+import { CardSkeleton } from '../../../../components/Skeleton';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success'> = {
   open: 'default',
@@ -124,12 +125,7 @@ export default function VisitDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading...</span>
-      </div>
-    );
+    return <CardSkeleton lines={10} />;
   }
   if (error || !visit) {
     return (
