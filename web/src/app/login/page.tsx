@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PawPrint, Loader2, Info, AlertCircle, Heart, Stethoscope, Sparkles, Check } from 'lucide-react';
 import { useAuth } from '../../auth/AuthContext';
-import { seedApi } from '../../api/seed';
 import { cn } from '../../lib/utils';
 
 export default function LoginPage() {
@@ -23,6 +22,7 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
     try {
+      localStorage.removeItem('demoMode');
       await login(email, password);
       router.push('/');
     } catch {
@@ -36,18 +36,16 @@ export default function LoginPage() {
     setError('');
     setDemoLoading(true);
     try {
-      setDemoStep('Seeding demo data...');
-      try {
-        await seedApi.seedDemo();
-      } catch {
-        // Seed failed (backend may not be running) — continue with login anyway
-      }
+      setDemoStep('Loading demo data...');
+      localStorage.setItem('demoMode', 'true');
+      await new Promise((r) => setTimeout(r, 600));
       setDemoStep('Signing you in...');
       await login('sarah.mitchell@vetpms.demo', 'demo1234');
       setDemoStep('Ready!');
       await new Promise((r) => setTimeout(r, 400));
       router.push('/');
     } catch {
+      localStorage.removeItem('demoMode');
       setError('Failed to sign in. Please try again.');
       setDemoStep('');
     } finally {

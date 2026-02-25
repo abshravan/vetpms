@@ -38,11 +38,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [loadUser]);
 
   const login = async (email: string, _password: string) => {
-    const name = email.split('@')[0] || 'dev';
+    const namePart = email.split('@')[0] || 'dev';
+    // For demo accounts, use proper name parsing (e.g. sarah.mitchell → Sarah Mitchell)
+    const parts = namePart.split('.');
+    const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+    const lastName = parts.length > 1
+      ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1)
+      : 'User';
     const devUser: User = {
-      id: '00000000-0000-0000-0000-000000000000',
-      firstName: name.charAt(0).toUpperCase() + name.slice(1),
-      lastName: 'User',
+      id: '10000000-0000-0000-0000-000000000001',
+      firstName,
+      lastName,
       email,
       role: 'admin',
     };
@@ -54,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('devUser');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('demoMode');
     setUser(null);
   };
 
