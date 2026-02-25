@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
-import { ArrowLeft, Loader2, AlertTriangle, Trash2, Receipt } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Trash2, Receipt, Printer, Download } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import {
   Invoice,
@@ -160,11 +160,42 @@ export default function InvoiceDetailPage() {
         {canEdit && (
           <button
             onClick={() => handleStatusChange('cancelled')}
-            className="inline-flex h-9 items-center gap-2 rounded-xl border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 hover:shadow-sm"
+            className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 hover:shadow-sm"
           >
             Cancel
           </button>
         )}
+        <button
+          onClick={() => window.print()}
+          className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          title="Print invoice"
+        >
+          <Printer className="h-4 w-4" />
+          Print
+        </button>
+        <button
+          onClick={() => { document.title = `Invoice_${invoice.invoiceNumber}`; window.print(); document.title = 'VetPMS — Veterinary Practice Management'; }}
+          className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          title="Save as PDF (use browser Print → Save as PDF)"
+        >
+          <Download className="h-4 w-4" />
+          PDF
+        </button>
+      </div>
+
+      {/* Print header — only visible when printing */}
+      <div className="print-header mb-6 hidden">
+        <div className="mb-4 flex items-center justify-between border-b-2 border-black pb-3">
+          <div>
+            <h2 className="text-xl font-bold">Springfield Veterinary Clinic</h2>
+            <p className="text-sm text-gray-600">1200 Medical Center Drive, Springfield, IL 62701</p>
+            <p className="text-sm text-gray-600">(555) 200-3000 · info@springfieldvet.com</p>
+          </div>
+          <div className="text-right">
+            <h1 className="text-2xl font-bold">INVOICE</h1>
+            <p className="text-lg font-semibold">{invoice.invoiceNumber}</p>
+          </div>
+        </div>
       </div>
 
       {/* Invoice info */}

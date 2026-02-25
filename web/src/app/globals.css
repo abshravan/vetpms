@@ -210,3 +210,73 @@
 
 .dark ::-webkit-scrollbar-thumb { background: oklch(0.4 0 0 / 0.4); }
 .dark ::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0 0 / 0.5); }
+
+/* ── Print styles ── */
+@media print {
+  /* Hide navigation, header, and non-printable elements */
+  aside,
+  header,
+  .no-print,
+  [data-no-print] {
+    display: none !important;
+  }
+
+  /* Reset page layout */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Remove dark mode overrides */
+  .dark {
+    --color-background: white;
+    --color-foreground: black;
+    --color-card: white;
+    --color-card-foreground: black;
+    --color-border: #ddd;
+    --color-muted-foreground: #666;
+  }
+
+  /* Cards print clean */
+  .shadow-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Remove gradients */
+  .text-gradient {
+    background: none !important;
+    -webkit-text-fill-color: inherit !important;
+    color: black !important;
+  }
+
+  .glass {
+    background: white !important;
+    backdrop-filter: none !important;
+  }
+
+  .bg-dots {
+    background-image: none !important;
+  }
+
+  /* Print header */
+  .print-header {
+    display: block !important;
+  }
+
+  /* Page breaks */
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  @page {
+    margin: 0.75in;
+    size: letter;
+  }
+}
