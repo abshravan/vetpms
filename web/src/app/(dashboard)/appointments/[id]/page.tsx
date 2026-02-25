@@ -21,6 +21,7 @@ import {
   APPOINTMENT_TRANSITIONS,
   APPOINTMENT_TYPE_OPTIONS,
 } from '../../../../types';
+import toast from 'react-hot-toast';
 
 const STATUS_BUTTON_LABELS: Partial<Record<AppointmentStatus, string>> = {
   confirmed: 'Confirm',
@@ -68,9 +69,10 @@ export default function AppointmentDetailPage() {
     setTransitioning(true);
     try {
       await appointmentsApi.transition(id, status);
+      toast.success(`Appointment ${STATUS_BUTTON_LABELS[status]?.toLowerCase() || 'updated'}`);
       fetchAppointment();
     } catch {
-      setError('Failed to update status');
+      toast.error('Failed to update status');
     } finally {
       setTransitioning(false);
     }
@@ -82,9 +84,10 @@ export default function AppointmentDetailPage() {
     try {
       await appointmentsApi.transition(id, 'cancelled', cancelReason);
       setCancelDialogOpen(false);
+      toast.success('Appointment cancelled');
       fetchAppointment();
     } catch {
-      setError('Failed to cancel appointment');
+      toast.error('Failed to cancel appointment');
     } finally {
       setTransitioning(false);
     }

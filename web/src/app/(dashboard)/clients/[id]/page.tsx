@@ -7,6 +7,7 @@ import { Chip } from '@mui/material';
 import { ArrowLeft, Loader2, Pencil, Plus, PawPrint, Users, AlertTriangle } from 'lucide-react';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
+import toast from 'react-hot-toast';
 import { Client, CreateClientData, CreatePatientData } from '../../../../types';
 import ClientFormDialog from '../../../../components/clients/ClientFormDialog';
 import PatientFormDialog from '../../../../components/patients/PatientFormDialog';
@@ -49,11 +50,13 @@ export default function ClientDetailPage() {
   const handleUpdate = async (data: CreateClientData) => {
     if (!id) return;
     await clientsApi.update(id, data);
+    toast.success('Client updated successfully');
     fetchClient();
   };
 
   const handleAddPatient = async (data: CreatePatientData) => {
     await patientsApi.create(data);
+    toast.success('Patient added successfully');
     fetchClient();
   };
 

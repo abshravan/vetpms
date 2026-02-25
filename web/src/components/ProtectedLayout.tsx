@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, PawPrint } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { SidebarProvider, useSidebar } from './SidebarContext';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 import Header from './Header';
 import CommandPalette from './CommandPalette';
+import ToastProvider from './ToastProvider';
 
-export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+function LayoutInner({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { isMobile } = useSidebar();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -43,21 +46,30 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
       <Sidebar />
       <Header />
       <CommandPalette />
+      <ToastProvider />
       <main
-        className="min-h-screen flex-1 pt-16"
-        style={{ marginLeft: SIDEBAR_WIDTH }}
+        className="min-h-screen flex-1 pt-16 transition-all duration-300"
+        style={{ marginLeft: isMobile ? 0 : SIDEBAR_WIDTH }}
       >
         <AnimatePresence mode="wait">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="p-6 lg:p-8"
+            className="p-4 sm:p-6 lg:p-8"
           >
             {children}
           </motion.div>
         </AnimatePresence>
       </main>
     </div>
+  );
+}
+
+export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <LayoutInner>{children}</LayoutInner>
+    </SidebarProvider>
   );
 }

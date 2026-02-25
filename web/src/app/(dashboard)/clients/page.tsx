@@ -17,6 +17,7 @@ import { Plus, Search, Eye, Users, PawPrint, Loader2 } from 'lucide-react';
 import { clientsApi } from '../../../api/clients';
 import { Client, PaginatedResult } from '../../../types';
 import ClientFormDialog from '../../../components/clients/ClientFormDialog';
+import toast from 'react-hot-toast';
 import { cn } from '../../../lib/utils';
 
 export default function ClientsListPage() {
@@ -58,6 +59,7 @@ export default function ClientsListPage() {
 
   const handleCreate = async (data: Parameters<typeof clientsApi.create>[0]) => {
     await clientsApi.create(data);
+    toast.success('Client created successfully');
     fetchClients();
   };
 

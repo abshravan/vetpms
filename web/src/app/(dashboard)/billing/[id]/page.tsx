@@ -20,7 +20,9 @@ import {
   DialogActions,
 } from '@mui/material';
 import { ArrowLeft, Loader2, AlertTriangle, Trash2, Receipt, Printer, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { billingApi } from '../../../../api/billing';
+import ConfirmDialog from '../../../../components/ConfirmDialog';
 import {
   Invoice,
   RecordPaymentData,
@@ -41,6 +43,8 @@ export default function InvoiceDetailPage() {
   const [payMethod, setPayMethod] = useState<PaymentMethod>('credit_card');
   const [payNotes, setPayNotes] = useState('');
   const [paying, setPaying] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmRemoveItem, setConfirmRemoveItem] = useState<string | null>(null);
 
   const fetchInvoice = useCallback(async () => {
     if (!id) return;
@@ -72,9 +76,10 @@ export default function InvoiceDetailPage() {
       setPayDialogOpen(false);
       setPayAmount('');
       setPayNotes('');
+      toast.success('Payment recorded successfully');
       fetchInvoice();
     } catch {
-      setError('Failed to record payment');
+      toast.error('Failed to record payment');
     } finally {
       setPaying(false);
     }
@@ -82,14 +87,26 @@ export default function InvoiceDetailPage() {
 
   const handleStatusChange = async (status: 'sent' | 'cancelled') => {
     if (!id) return;
-    await billingApi.update(id, { status });
-    fetchInvoice();
+    try {
+      await billingApi.update(id, { status });
+      toast.success(status === 'cancelled' ? 'Invoice cancelled' : 'Invoice marked as sent');
+      setConfirmCancel(false);
+      fetchInvoice();
+    } catch {
+      toast.error('Failed to update invoice');
+    }
   };
 
   const handleRemoveItem = async (itemId: string) => {
     if (!id) return;
-    await billingApi.removeItem(id, itemId);
-    fetchInvoice();
+    try {
+      await billingApi.removeItem(id, itemId);
+      toast.success('Line item removed');
+      setConfirmRemoveItem(null);
+      fetchInvoice();
+    } catch {
+      toast.error('Failed to remove item');
+    }
   };
 
   const fmt = (n: number | string) => `$${Number(n).toFixed(2)}`;
@@ -159,7 +176,7 @@ export default function InvoiceDetailPage() {
         )}
         {canEdit && (
           <button
-            onClick={() => handleStatusChange('cancelled')}
+            onClick={() => setConfirmCancel(true)}
             className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-destructive/30 px-3.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 hover:shadow-sm"
           >
             Cancel
@@ -275,7 +292,7 @@ export default function InvoiceDetailPage() {
                   <TableCell align="right">{fmt(item.lineTotal)}</TableCell>
                   {canEdit && (
                     <TableCell>
-                      <IconButton size="small" color="error" onClick={() => handleRemoveItem(item.id)}>
+                      <IconButton size="small" color="error" onClick={() => setConfirmRemoveItem(item.id)}>
                         <Trash2 className="h-4 w-4" />
                       </IconButton>
                     </TableCell>
@@ -376,6 +393,28 @@ export default function InvoiceDetailPage() {
           </button>
         </DialogActions>
       </Dialog>
+
+      {/* Cancel invoice confirmation */}
+      <ConfirmDialog
+        open={confirmCancel}
+        onClose={() => setConfirmCancel(false)}
+        onConfirm={() => handleStatusChange('cancelled')}
+        title="Cancel Invoice"
+        message="Are you sure you want to cancel this invoice? This action cannot be undone."
+        confirmLabel="Cancel Invoice"
+        variant="danger"
+      />
+
+      {/* Remove item confirmation */}
+      <ConfirmDialog
+        open={confirmRemoveItem !== null}
+        onClose={() => setConfirmRemoveItem(null)}
+        onConfirm={() => confirmRemoveItem && handleRemoveItem(confirmRemoveItem)}
+        title="Remove Line Item"
+        message="Are you sure you want to remove this line item from the invoice?"
+        confirmLabel="Remove Item"
+        variant="danger"
+      />
     </motion.div>
   );
 }

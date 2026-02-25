@@ -31,6 +31,7 @@ import {
   APPOINTMENT_TYPE_OPTIONS,
 } from '../../../types';
 import AppointmentFormDialog from '../../../components/appointments/AppointmentFormDialog';
+import toast from 'react-hot-toast';
 import { cn } from '../../../lib/utils';
 
 type ViewMode = 'day' | 'week' | 'list';
@@ -133,6 +134,7 @@ export default function AppointmentsPage() {
 
   const handleCreate = async (data: Parameters<typeof appointmentsApi.create>[0]) => {
     await appointmentsApi.create(data);
+    toast.success('Appointment created successfully');
     fetchAppointments();
   };
 

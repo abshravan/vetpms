@@ -12,7 +12,8 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowLeft, Loader2, Pencil, PawPrint, AlertTriangle, Plus } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil, PawPrint, AlertTriangle, Plus, Camera } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { patientsApi } from '../../../../api/patients';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
@@ -68,6 +69,7 @@ export default function PatientProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const fetchPatient = useCallback(async () => {
     if (!id) return;
@@ -100,7 +102,23 @@ export default function PatientProfilePage() {
     if (!id) return;
     const { clientId: _, ...updateData } = data;
     await patientsApi.update(id, updateData);
+    toast.success('Patient updated successfully');
     fetchPatient();
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoPreview(reader.result as string);
+      toast.success('Photo uploaded');
+    };
+    reader.readAsDataURL(file);
   };
 
   if (loading) {
@@ -147,16 +165,33 @@ export default function PatientProfilePage() {
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
     >
       {/* Header */}
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-6 flex items-center gap-3">
         <button
           onClick={() => router.push(patient.client ? `/clients/${patient.clientId}` : '/patients')}
           className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-          <PawPrint className="h-4 w-4 text-primary" />
-        </div>
+
+        {/* Photo avatar */}
+        <label className="group relative cursor-pointer" title="Upload photo">
+          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border-2 border-border/60 bg-gradient-to-br from-primary/10 to-primary/5 transition-all group-hover:border-primary/40 group-hover:shadow-md">
+            {photoPreview || patient.photoUrl ? (
+              <img
+                src={photoPreview || patient.photoUrl || ''}
+                alt={patient.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <PawPrint className="h-6 w-6 text-primary/40" />
+            )}
+          </div>
+          <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground opacity-0 shadow-sm transition-all group-hover:opacity-100">
+            <Camera className="h-3 w-3" />
+          </div>
+          <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+        </label>
+
         <div className="flex-grow">
           <div className="mb-0.5 flex items-center gap-2">
             <span className="text-[11px] font-semibold uppercase tracking-widest text-primary">Patient Profile</span>
