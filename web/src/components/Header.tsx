@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, Moon, Sun, Sparkles } from 'lucide-react';
+import { Bell, LogOut, Moon, Sun, Sparkles, Search, Command } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { SIDEBAR_WIDTH } from './Sidebar';
 import { notificationsApi } from '../api/notifications';
@@ -47,6 +47,19 @@ export default function Header() {
         {/* Right — actions */}
         {user && (
           <div className="flex items-center gap-1.5">
+            {/* Search trigger */}
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="mr-1 inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 text-xs text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+              title="Search (⌘K)"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Search...</span>
+              <kbd className="hidden rounded border border-border/60 bg-background px-1 py-0.5 text-[10px] font-medium sm:inline-flex sm:items-center sm:gap-0.5">
+                <Command className="h-2.5 w-2.5" />K
+              </kbd>
+            </button>
+
             {/* Dark mode toggle */}
             <button
               onClick={toggleTheme}

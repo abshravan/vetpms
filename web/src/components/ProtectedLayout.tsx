@@ -7,6 +7,7 @@ import { Loader2, PawPrint } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import Sidebar, { SIDEBAR_WIDTH } from './Sidebar';
 import Header from './Header';
+import CommandPalette from './CommandPalette';
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -41,6 +42,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-screen bg-background bg-dots">
       <Sidebar />
       <Header />
+      <CommandPalette />
       <main
         className="min-h-screen flex-1 pt-16"
         style={{ marginLeft: SIDEBAR_WIDTH }}

@@ -12,7 +12,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { ArrowLeft, Loader2, AlertTriangle, Stethoscope } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertTriangle, Stethoscope, Printer, Download } from 'lucide-react';
 import { visitsApi } from '../../../../api/visits';
 import { treatmentsApi } from '../../../../api/treatments';
 import {
@@ -158,11 +158,42 @@ export default function VisitDetailPage() {
         {!isCompleted && (
           <button
             onClick={handleComplete}
-            className="inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
+            className="no-print inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
           >
             Complete Visit
           </button>
         )}
+        <button
+          onClick={() => window.print()}
+          className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          title="Print visit record"
+        >
+          <Printer className="h-4 w-4" />
+          Print
+        </button>
+        <button
+          onClick={() => { document.title = `Visit_${visit.patient?.name}_${new Date(visit.createdAt).toLocaleDateString()}`; window.print(); document.title = 'VetPMS — Veterinary Practice Management'; }}
+          className="no-print inline-flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3.5 text-sm font-medium text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:shadow-sm"
+          title="Save as PDF"
+        >
+          <Download className="h-4 w-4" />
+          PDF
+        </button>
+      </div>
+
+      {/* Print header — only visible when printing */}
+      <div className="print-header mb-6 hidden">
+        <div className="mb-4 flex items-center justify-between border-b-2 border-black pb-3">
+          <div>
+            <h2 className="text-xl font-bold">Springfield Veterinary Clinic</h2>
+            <p className="text-sm text-gray-600">1200 Medical Center Drive, Springfield, IL 62701</p>
+            <p className="text-sm text-gray-600">(555) 200-3000 · info@springfieldvet.com</p>
+          </div>
+          <div className="text-right">
+            <h1 className="text-2xl font-bold">VISIT RECORD</h1>
+            <p className="text-sm">{visit.patient?.name} — {new Date(visit.createdAt).toLocaleDateString()}</p>
+          </div>
+        </div>
       </div>
 
       {/* Visit info */}
