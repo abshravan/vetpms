@@ -20,6 +20,10 @@ import {
   MessageSquare,
   FlaskConical,
   CalendarClock,
+  Home,
+  FolderOpen,
+  Globe,
+  Package,
 } from 'lucide-react';
 
 export const SIDEBAR_WIDTH = 260;
@@ -45,6 +49,13 @@ const navGroups = [
     items: [
       { label: 'Lab Results', icon: FlaskConical, path: '/lab-results' },
       { label: 'Communications', icon: MessageSquare, path: '/communications' },
+      { label: 'Documents', icon: FolderOpen, path: '/documents' },
+    ],
+  },
+  {
+    label: 'Facility',
+    items: [
+      { label: 'Boarding', icon: Home, path: '/boarding' },
     ],
   },
   {
@@ -53,12 +64,14 @@ const navGroups = [
       { label: 'Pharmacy', icon: Pill, path: '/pharmacy' },
       { label: 'Billing', icon: Receipt, path: '/billing' },
       { label: 'Scheduling', icon: CalendarClock, path: '/scheduling' },
+      { label: 'Inventory', icon: Package, path: '/inventory-analytics' },
       { label: 'Reports', icon: BarChart3, path: '/reports' },
     ],
   },
   {
     label: 'System',
     items: [
+      { label: 'Client Portal', icon: Globe, path: '/client-portal' },
       { label: 'Notifications', icon: Bell, path: '/notifications' },
       { label: 'Settings', icon: Settings, path: '/settings' },
     ],
