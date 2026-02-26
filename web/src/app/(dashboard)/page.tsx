@@ -25,6 +25,7 @@ import dynamic from 'next/dynamic';
 import { DashboardSkeleton } from '../../components/Skeleton';
 
 const DashboardCharts = dynamic(() => import('../../components/DashboardCharts'), { ssr: false });
+const PredictiveHealthDashboard = dynamic(() => import('../../components/PredictiveHealthDashboard'), { ssr: false });
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'info' | 'error'> = {
   open: 'default',
@@ -142,6 +143,11 @@ export default function DashboardPage() {
 
       {/* Charts */}
       <DashboardCharts />
+
+      {/* Predictive Health Insights */}
+      <div className="mb-8">
+        <PredictiveHealthDashboard />
+      </div>
 
       {/* Tables Row */}
       <div className="grid gap-6 lg:grid-cols-2">
