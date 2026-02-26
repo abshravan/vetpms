@@ -15,6 +15,8 @@ import {
   Settings,
   Bell,
   X,
+  Video,
+  BrainCircuit,
 } from 'lucide-react';
 
 export const SIDEBAR_WIDTH = 260;
@@ -32,6 +34,7 @@ const navGroups = [
       { label: 'Clients', icon: Users, path: '/clients' },
       { label: 'Patients', icon: PawPrint, path: '/patients' },
       { label: 'Appointments', icon: CalendarDays, path: '/appointments' },
+      { label: 'Telemedicine', icon: Video, path: '/telemedicine' },
     ],
   },
   {

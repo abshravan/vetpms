@@ -37,6 +37,7 @@ import SOAPNoteForm from '../../../../components/visits/SOAPNoteForm';
 import TreatmentForm from '../../../../components/visits/TreatmentForm';
 import VaccinationForm from '../../../../components/visits/VaccinationForm';
 import { CardSkeleton } from '../../../../components/Skeleton';
+import AIClinicalSupport from '../../../../components/AIClinicalSupport';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success'> = {
   open: 'default',
@@ -490,6 +491,16 @@ export default function VisitDetailPage() {
             No clinical notes recorded for this visit.
           </p>
         )}
+      </div>
+
+      {/* AI Clinical Decision Support */}
+      <div className="mb-4">
+        <AIClinicalSupport
+          visit={visit}
+          treatments={treatments}
+          patientSpecies={visit.patient?.species || 'dog'}
+          patientNotes={visit.patient?.notes || null}
+        />
       </div>
 
       {/* Complete visit confirmation */}

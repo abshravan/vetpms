@@ -34,6 +34,7 @@ import {
 } from '../../../../types';
 import PatientFormDialog from '../../../../components/patients/PatientFormDialog';
 import PatientTimeline from '../../../../components/PatientTimeline';
+import PreventiveCareEngine from '../../../../components/PreventiveCareEngine';
 import { PatientProfileSkeleton } from '../../../../components/Skeleton';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -409,6 +410,11 @@ export default function PatientProfilePage() {
       <SectionCard title="Patient Timeline" count={visits.length + vaccinations.length + invoices.length}>
         <PatientTimeline visits={visits} vaccinations={vaccinations} invoices={invoices} />
       </SectionCard>
+
+      {/* Smart Preventive Care */}
+      <div className="mb-4">
+        <PreventiveCareEngine patient={patient} />
+      </div>
 
       {/* Visit History */}
       <div className="mb-3 flex items-center justify-between">
