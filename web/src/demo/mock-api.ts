@@ -255,20 +255,28 @@ const routes: { method: string; pattern: RegExp; handler: MockHandler }[] = [
   {
     method: 'get',
     pattern: /^\/reports\/revenue$/,
-    handler: () => [
-      { period: 'Week 1', totalInvoiced: 1285.40, totalCollected: 988.20, outstanding: 297.20, invoiceCount: 3 },
-      { period: 'Week 2', totalInvoiced: 453.60, totalCollected: 0, outstanding: 453.60, invoiceCount: 1 },
-      { period: 'Week 3', totalInvoiced: 97.20, totalCollected: 0, outstanding: 97.20, invoiceCount: 1 },
-    ],
+    handler: () => {
+      const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
+      return months.map((m, i) => ({
+        period: m,
+        totalInvoiced: 3200 + Math.round(Math.sin(i * 1.2) * 1200 + i * 400),
+        totalCollected: 2800 + Math.round(Math.sin(i * 1.2) * 1000 + i * 350),
+        outstanding: 400 + Math.round(Math.abs(Math.sin(i * 0.8)) * 500),
+        invoiceCount: 8 + i * 2,
+      }));
+    },
   },
   {
     method: 'get',
     pattern: /^\/reports\/visits$/,
-    handler: () => [
-      { period: 'This Week', visitCount: 4, completedCount: 3 },
-      { period: 'Last Week', visitCount: 6, completedCount: 6 },
-      { period: '2 Weeks Ago', visitCount: 5, completedCount: 5 },
-    ],
+    handler: () => {
+      const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
+      return months.map((m, i) => ({
+        period: m,
+        visitCount: 12 + Math.round(Math.sin(i * 0.9) * 5 + i * 2),
+        completedCount: 10 + Math.round(Math.sin(i * 0.9) * 4 + i * 2),
+      }));
+    },
   },
   {
     method: 'get',

@@ -17,6 +17,7 @@ import { ArrowLeft, Trash2, Plus, AlertTriangle, FileText } from 'lucide-react';
 import { billingApi } from '../../../../api/billing';
 import { clientsApi } from '../../../../api/clients';
 import { patientsApi } from '../../../../api/patients';
+import toast from 'react-hot-toast';
 import { Client, Patient, CreateInvoiceItemData } from '../../../../types';
 
 interface LineItem extends CreateInvoiceItemData {
@@ -95,9 +96,10 @@ export default function NewInvoicePage() {
         notes: notes || undefined,
         items: items.filter((i) => i.description).map(({ lineTotal, ...rest }) => rest),
       });
+      toast.success('Invoice created');
       router.push(`/billing/${data.id}`);
     } catch {
-      setError('Failed to create invoice');
+      toast.error('Failed to create invoice');
     } finally {
       setSubmitting(false);
     }

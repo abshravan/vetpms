@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, Moon, Sun, Sparkles, Search, Command } from 'lucide-react';
+import { Bell, LogOut, Moon, Sun, Sparkles, Search, Command, Menu } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { SIDEBAR_WIDTH } from './Sidebar';
+import { useSidebar } from './SidebarContext';
 import { notificationsApi } from '../api/notifications';
 import { useTheme } from '../theme/ThemeContext';
 import { cn } from '../lib/utils';
@@ -13,6 +14,7 @@ export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { isMobile, toggle } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -30,19 +32,35 @@ export default function Header() {
 
   return (
     <header
-      className="fixed top-0 z-20 flex h-16 items-center border-b border-border/50 glass"
-      style={{ left: SIDEBAR_WIDTH, width: `calc(100% - ${SIDEBAR_WIDTH}px)` }}
+      className={cn(
+        'fixed top-0 z-20 flex h-16 items-center border-b border-border/50 glass transition-all duration-300',
+      )}
+      style={{
+        left: isMobile ? 0 : SIDEBAR_WIDTH,
+        width: isMobile ? '100%' : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+      }}
     >
-      <div className="flex w-full items-center justify-between px-6">
-        {/* Left — greeting */}
-        {user && (
-          <div className="flex items-center gap-2 text-sm">
-            <Sparkles className="h-4 w-4 text-primary/60" />
-            <span className="text-muted-foreground">
-              Welcome back, <span className="font-medium text-foreground">{user.firstName}</span>
-            </span>
-          </div>
-        )}
+      <div className="flex w-full items-center justify-between px-4 sm:px-6">
+        {/* Left — hamburger + greeting */}
+        <div className="flex items-center gap-3">
+          {isMobile && (
+            <button
+              onClick={toggle}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-all hover:bg-accent hover:text-foreground"
+              aria-label="Toggle menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+          {user && (
+            <div className="flex items-center gap-2 text-sm">
+              <Sparkles className="hidden h-4 w-4 text-primary/60 sm:block" />
+              <span className="hidden text-muted-foreground sm:inline">
+                Welcome back, <span className="font-medium text-foreground">{user.firstName}</span>
+              </span>
+            </div>
+          )}
+        </div>
 
         {/* Right — actions */}
         {user && (
@@ -86,7 +104,7 @@ export default function Header() {
             </button>
 
             {/* Separator */}
-            <div className="mx-2 h-6 w-px bg-gradient-to-b from-transparent via-border to-transparent" />
+            <div className="mx-2 hidden h-6 w-px bg-gradient-to-b from-transparent via-border to-transparent sm:block" />
 
             {/* User info */}
             <div className="flex items-center gap-3">

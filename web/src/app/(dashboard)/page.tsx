@@ -21,6 +21,10 @@ import {
 import { Chip } from '@mui/material';
 import { reportsApi, DashboardStats } from '../../api/reports';
 import { cn } from '../../lib/utils';
+import dynamic from 'next/dynamic';
+import { DashboardSkeleton } from '../../components/Skeleton';
+
+const DashboardCharts = dynamic(() => import('../../components/DashboardCharts'), { ssr: false });
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success' | 'info' | 'error'> = {
   open: 'default',
@@ -56,12 +60,7 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error || !stats) {
@@ -140,6 +139,9 @@ export default function DashboardPage() {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Charts */}
+      <DashboardCharts />
 
       {/* Tables Row */}
       <div className="grid gap-6 lg:grid-cols-2">

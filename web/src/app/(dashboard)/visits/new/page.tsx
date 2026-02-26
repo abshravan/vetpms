@@ -11,6 +11,7 @@ import { ArrowLeft, AlertTriangle, Stethoscope } from 'lucide-react';
 import { visitsApi } from '../../../../api/visits';
 import { patientsApi } from '../../../../api/patients';
 import { usersApi, UserSummary } from '../../../../api/users';
+import toast from 'react-hot-toast';
 import { Patient } from '../../../../types';
 
 export default function NewVisitPage() {
@@ -52,9 +53,10 @@ export default function NewVisitPage() {
         vetId,
         chiefComplaint: chiefComplaint || undefined,
       });
+      toast.success('Visit started');
       router.push(`/visits/${data.id}`);
     } catch {
-      setError('Failed to create visit');
+      toast.error('Failed to create visit');
     } finally {
       setSubmitting(false);
     }

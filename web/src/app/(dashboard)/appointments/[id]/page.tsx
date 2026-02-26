@@ -21,6 +21,9 @@ import {
   APPOINTMENT_TRANSITIONS,
   APPOINTMENT_TYPE_OPTIONS,
 } from '../../../../types';
+import toast from 'react-hot-toast';
+import AppointmentReminders from '../../../../components/AppointmentReminders';
+import { CardSkeleton } from '../../../../components/Skeleton';
 
 const STATUS_BUTTON_LABELS: Partial<Record<AppointmentStatus, string>> = {
   confirmed: 'Confirm',
@@ -68,9 +71,10 @@ export default function AppointmentDetailPage() {
     setTransitioning(true);
     try {
       await appointmentsApi.transition(id, status);
+      toast.success(`Appointment ${STATUS_BUTTON_LABELS[status]?.toLowerCase() || 'updated'}`);
       fetchAppointment();
     } catch {
-      setError('Failed to update status');
+      toast.error('Failed to update status');
     } finally {
       setTransitioning(false);
     }
@@ -82,21 +86,17 @@ export default function AppointmentDetailPage() {
     try {
       await appointmentsApi.transition(id, 'cancelled', cancelReason);
       setCancelDialogOpen(false);
+      toast.success('Appointment cancelled');
       fetchAppointment();
     } catch {
-      setError('Failed to cancel appointment');
+      toast.error('Failed to cancel appointment');
     } finally {
       setTransitioning(false);
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading...</span>
-      </div>
-    );
+    return <CardSkeleton lines={6} />;
   }
 
   if (error || !appointment) {
@@ -294,6 +294,19 @@ export default function AppointmentDetailPage() {
           </button>
         </DialogActions>
       </Dialog>
+
+      {/* Reminders */}
+      {appointment.status !== 'completed' && appointment.status !== 'cancelled' && appointment.status !== 'no_show' && (
+        <div className="mt-6">
+          <AppointmentReminders
+            appointmentId={appointment.id}
+            clientName={appointment.client ? `${appointment.client.firstName} ${appointment.client.lastName}` : 'Client'}
+            clientEmail={appointment.client?.email}
+            clientPhone={appointment.client?.phone}
+            appointmentDate={appointment.startTime}
+          />
+        </div>
+      )}
     </motion.div>
   );
 }

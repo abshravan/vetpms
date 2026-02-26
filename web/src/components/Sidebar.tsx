@@ -1,7 +1,9 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
+import { useSidebar } from './SidebarContext';
 import {
   LayoutDashboard,
   Users,
@@ -12,6 +14,7 @@ import {
   BarChart3,
   Settings,
   Bell,
+  X,
 } from 'lucide-react';
 
 export const SIDEBAR_WIDTH = 260;
@@ -51,31 +54,50 @@ const navGroups = [
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { isOpen, isMobile, close } = useSidebar();
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     return pathname.startsWith(path);
   };
 
-  return (
+  const handleNav = (path: string) => {
+    router.push(path);
+    if (isMobile) close();
+  };
+
+  const sidebarContent = (
     <aside
-      className="fixed inset-y-0 left-0 z-30 flex flex-col border-r border-sidebar-border bg-sidebar"
+      className={cn(
+        'fixed inset-y-0 left-0 z-40 flex flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+        isMobile && !isOpen && '-translate-x-full',
+      )}
       style={{ width: SIDEBAR_WIDTH }}
     >
       {/* Logo area with gradient accent */}
-      <div className="relative flex h-16 items-center gap-3 px-5">
+      <div className="relative flex h-16 items-center justify-between gap-3 px-5">
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sidebar-border to-transparent" />
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-md glow-primary">
-          <PawPrint className="h-[18px] w-[18px] text-primary-foreground" />
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-md glow-primary">
+            <PawPrint className="h-[18px] w-[18px] text-primary-foreground" />
+          </div>
+          <div>
+            <span className="text-[15px] font-bold tracking-tight text-sidebar-foreground">
+              VetPMS
+            </span>
+            <p className="text-[10px] font-medium text-muted-foreground">
+              Practice Management
+            </p>
+          </div>
         </div>
-        <div>
-          <span className="text-[15px] font-bold tracking-tight text-sidebar-foreground">
-            VetPMS
-          </span>
-          <p className="text-[10px] font-medium text-muted-foreground">
-            Practice Management
-          </p>
-        </div>
+        {isMobile && (
+          <button
+            onClick={close}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -91,7 +113,7 @@ export default function Sidebar() {
                 return (
                   <li key={item.path}>
                     <button
-                      onClick={() => router.push(item.path)}
+                      onClick={() => handleNav(item.path)}
                       aria-current={active ? 'page' : undefined}
                       className={cn(
                         'group relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
@@ -134,5 +156,23 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {isMobile && isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+            onClick={close}
+          />
+        )}
+      </AnimatePresence>
+      {sidebarContent}
+    </>
   );
 }

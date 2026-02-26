@@ -30,10 +30,13 @@ import {
   VACCINATION_STATUS_LABELS,
   VACCINATION_STATUS_COLORS,
 } from '../../../../types';
+import toast from 'react-hot-toast';
+import ConfirmDialog from '../../../../components/ConfirmDialog';
 import VitalsForm from '../../../../components/visits/VitalsForm';
 import SOAPNoteForm from '../../../../components/visits/SOAPNoteForm';
 import TreatmentForm from '../../../../components/visits/TreatmentForm';
 import VaccinationForm from '../../../../components/visits/VaccinationForm';
+import { CardSkeleton } from '../../../../components/Skeleton';
 
 const STATUS_COLORS: Record<string, 'default' | 'warning' | 'success'> = {
   open: 'default',
@@ -77,46 +80,52 @@ export default function VisitDetailPage() {
     fetchAll();
   }, [fetchAll]);
 
+  const [confirmComplete, setConfirmComplete] = useState(false);
+  const [confirmCancelTx, setConfirmCancelTx] = useState<string | null>(null);
+
   const handleRecordVitals = async (data: RecordVitalsData) => {
     if (!id) return;
     await visitsApi.recordVitals(id, data);
+    toast.success('Vitals recorded');
     fetchAll();
   };
 
   const handleAddNote = async (data: CreateClinicalNoteData) => {
     if (!id) return;
     await visitsApi.addNote(id, data);
+    toast.success('Note added');
     fetchAll();
   };
 
   const handleAddTreatment = async (data: CreateTreatmentData) => {
     await treatmentsApi.create(data);
+    toast.success('Treatment added');
     fetchAll();
   };
 
   const handleAddVaccination = async (data: CreateVaccinationData) => {
     await treatmentsApi.createVaccination(data);
+    toast.success('Vaccination recorded');
     fetchAll();
   };
 
   const handleTreatmentStatus = async (treatmentId: string, status: 'completed' | 'cancelled') => {
     await treatmentsApi.update(treatmentId, { status });
+    toast.success(status === 'completed' ? 'Treatment completed' : 'Treatment cancelled');
+    setConfirmCancelTx(null);
     fetchAll();
   };
 
   const handleComplete = async () => {
     if (!id) return;
     await visitsApi.complete(id);
+    toast.success('Visit completed');
+    setConfirmComplete(false);
     fetchAll();
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-2 py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        <span className="text-sm text-muted-foreground">Loading...</span>
-      </div>
-    );
+    return <CardSkeleton lines={10} />;
   }
   if (error || !visit) {
     return (
@@ -157,7 +166,7 @@ export default function VisitDetailPage() {
         <Chip label={visit.status.replace('_', ' ').toUpperCase()} color={STATUS_COLORS[visit.status]} />
         {!isCompleted && (
           <button
-            onClick={handleComplete}
+            onClick={() => setConfirmComplete(true)}
             className="no-print inline-flex h-9 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:brightness-110 active:scale-[0.98]"
           >
             Complete Visit
@@ -335,7 +344,7 @@ export default function VisitDetailPage() {
                               Done
                             </button>
                             <button
-                              onClick={() => handleTreatmentStatus(tx.id, 'cancelled')}
+                              onClick={() => setConfirmCancelTx(tx.id)}
                               className="inline-flex h-7 items-center rounded-lg px-2 text-xs font-medium text-destructive transition-all hover:bg-destructive/10"
                             >
                               Cancel
@@ -482,6 +491,28 @@ export default function VisitDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Complete visit confirmation */}
+      <ConfirmDialog
+        open={confirmComplete}
+        onClose={() => setConfirmComplete(false)}
+        onConfirm={handleComplete}
+        title="Complete Visit"
+        message="Are you sure you want to mark this visit as completed? You won't be able to add more notes or treatments after completing."
+        confirmLabel="Complete Visit"
+        variant="warning"
+      />
+
+      {/* Cancel treatment confirmation */}
+      <ConfirmDialog
+        open={confirmCancelTx !== null}
+        onClose={() => setConfirmCancelTx(null)}
+        onConfirm={() => confirmCancelTx && handleTreatmentStatus(confirmCancelTx, 'cancelled')}
+        title="Cancel Treatment"
+        message="Are you sure you want to cancel this treatment?"
+        confirmLabel="Cancel Treatment"
+        variant="danger"
+      />
     </motion.div>
   );
 }
