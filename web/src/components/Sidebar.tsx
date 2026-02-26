@@ -17,6 +17,9 @@ import {
   X,
   Video,
   BrainCircuit,
+  MessageSquare,
+  FlaskConical,
+  CalendarClock,
 } from 'lucide-react';
 
 export const SIDEBAR_WIDTH = 260;
@@ -38,10 +41,18 @@ const navGroups = [
     ],
   },
   {
+    label: 'Clinical',
+    items: [
+      { label: 'Lab Results', icon: FlaskConical, path: '/lab-results' },
+      { label: 'Communications', icon: MessageSquare, path: '/communications' },
+    ],
+  },
+  {
     label: 'Operations',
     items: [
       { label: 'Pharmacy', icon: Pill, path: '/pharmacy' },
       { label: 'Billing', icon: Receipt, path: '/billing' },
+      { label: 'Scheduling', icon: CalendarClock, path: '/scheduling' },
       { label: 'Reports', icon: BarChart3, path: '/reports' },
     ],
   },
